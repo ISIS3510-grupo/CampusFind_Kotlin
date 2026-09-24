@@ -6,3 +6,9 @@ build
 
 # Ignore Kotlin plugin data
 .kotlin
+
+# Ignore macOS folder metadata
+.DS_Store
+
+# Ignore local Android SDK configuration
+local.properties
