@@ -36,6 +36,10 @@ fun LoginScreen(
         mutableStateOf(false)
     }
 
+    var isStaffLogin by remember {
+        mutableStateOf(false)
+    }
+
     var email by remember {
         mutableStateOf("")
     }
@@ -144,6 +148,7 @@ fun LoginScreen(
                 text = "Enter with Uniandes",
                 onClick = {
                     authenticationViewModel.clearError()
+                    isStaffLogin = false
                     showLoginDialog = true
                 },
                 height = 54
@@ -155,7 +160,11 @@ fun LoginScreen(
 
             SecondaryButton(
                 text = "Staff access",
-                onClick = onStaffLogin
+                onClick = {
+                    authenticationViewModel.clearError()
+                    isStaffLogin = true
+                    showLoginDialog = true
+                }
             )
 
             Spacer(
@@ -192,7 +201,7 @@ fun LoginScreen(
 
             title = {
                 Text(
-                    text = "Uniandes sign in",
+                    text = if (isStaffLogin) "Staff sign in" else "Uniandes sign in",
                     fontWeight = FontWeight.Medium
                 )
             },
@@ -293,16 +302,28 @@ fun LoginScreen(
                         !authenticationViewModel.isLoading,
                     onClick = {
 
-                        authenticationViewModel.loginStudent(
-                            email = email,
-                            password = password,
+                        if (isStaffLogin) {
+                            authenticationViewModel.loginAdmin(
+                                email = email,
+                                password = password,
+                                onSuccess = {
+                                    showLoginDialog = false
+                                    password = ""
+                                    onStaffLogin()
+                                }
+                            )
+                        } else {
+                            authenticationViewModel.loginStudent(
+                                email = email,
+                                password = password,
 
-                            onSuccess = {
-                                showLoginDialog = false
-                                password = ""
-                                onStudentLogin()
-                            }
-                        )
+                                onSuccess = {
+                                    showLoginDialog = false
+                                    password = ""
+                                    onStudentLogin()
+                                }
+                            )
+                        }
                     }
                 ) {
 
