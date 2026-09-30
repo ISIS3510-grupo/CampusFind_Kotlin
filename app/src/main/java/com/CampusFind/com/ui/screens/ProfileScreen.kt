@@ -3,7 +3,15 @@ package com.CampusFind.com.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -17,17 +25,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.CampusFind.com.ui.components.*
+import com.CampusFind.com.ui.components.BottomNavigationBar
+import com.CampusFind.com.ui.components.CampusBorder
+import com.CampusFind.com.ui.components.CampusGray
+import com.CampusFind.com.ui.components.CampusYellow
+import com.CampusFind.com.ui.components.ImagePlaceholder
+import com.CampusFind.com.ui.components.PrimaryButton
+import com.CampusFind.com.ui.components.ScreenTitle
+import com.CampusFind.com.ui.components.YellowBadge
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
 
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit = {},
     onReportLost: () -> Unit = {},
-    onOpenReport: () -> Unit = {}
+    onOpenReport: (String) -> Unit = {}
 ) {
+
     Scaffold(
         containerColor = Color.White,
+
         bottomBar = {
             BottomNavigationBar(
                 selected = "Profile"
@@ -39,115 +56,218 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color.White)
+                .background(
+                    Color.White
+                )
         ) {
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(CampusYellow)
+                    .background(
+                        CampusYellow
+                    )
                     .padding(
                         horizontal = 22.dp,
                         vertical = 12.dp
                     )
             ) {
+
                 Text(
                     text = "uniandes",
-                    fontSize = 25.sp ,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = AnaheimFontFamily
+                    fontSize = 25.sp,
+                    fontWeight =
+                        FontWeight.Medium,
+                    fontFamily =
+                        AnaheimFontFamily
                 )
 
                 ScreenTitle(
                     title = "Profile",
-                    subtitle = "Nicolas Martinez · Student",
+                    subtitle =
+                        "Nicolas Martinez · Student",
                     onBack = onBack,
                     titleSize = 25.sp
                 )
             }
 
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier =
+                    Modifier.padding(
+                        24.dp
+                    )
             ) {
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(92.dp)
+                        .height(
+                            92.dp
+                        )
                         .border(
                             width = 1.dp,
-                            color = CampusBorder,
-                            shape = RoundedCornerShape(10.dp)
+                            color =
+                                CampusBorder,
+                            shape =
+                                RoundedCornerShape(
+                                    10.dp
+                                )
                         )
-                        .padding(18.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(
+                            18.dp
+                        ),
+
+                    verticalAlignment =
+                        Alignment.CenterVertically
                 ) {
+
                     Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(31.dp)
+                        imageVector =
+                            Icons.Default.Person,
+
+                        contentDescription =
+                            null,
+
+                        modifier =
+                            Modifier
+                                .width(
+                                    31.dp
+                                )
+                                .height(
+                                    31.dp
+                                )
                     )
 
                     Spacer(
-                        modifier = Modifier.width(18.dp)
+                        modifier =
+                            Modifier.width(
+                                18.dp
+                            )
                     )
 
                     Column {
+
                         Text(
-                            text = "n.martinez@uniandes.edu.co",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            text =
+                                "n.martinez@uniandes.edu.co",
+
+                            fontSize =
+                                16.sp,
+
+                            fontWeight =
+                                FontWeight.Medium
                         )
 
                         Spacer(
-                            modifier = Modifier.height(8.dp)
+                            modifier =
+                                Modifier.height(
+                                    8.dp
+                                )
                         )
 
                         Text(
-                            text = "Authenticated with Uniandes",
-                            fontSize = 13.sp,
-                            color = CampusGray
+                            text =
+                                "Authenticated with Uniandes",
+
+                            fontSize =
+                                13.sp,
+
+                            color =
+                                CampusGray
                         )
                     }
                 }
 
                 Spacer(
-                    modifier = Modifier.height(28.dp)
+                    modifier =
+                        Modifier.height(
+                            28.dp
+                        )
                 )
 
                 PrimaryButton(
-                    text = "Report a lost item",
-                    onClick = onReportLost,
+                    text =
+                        "Report a lost item",
+
+                    onClick =
+                        onReportLost,
+
                     height = 54
                 )
 
                 Spacer(
-                    modifier = Modifier.height(34.dp)
+                    modifier =
+                        Modifier.height(
+                            34.dp
+                        )
                 )
 
                 Text(
-                    text = "My lost-item reports",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium
+                    text =
+                        "My lost-item reports",
+
+                    fontSize =
+                        20.sp,
+
+                    fontWeight =
+                        FontWeight.Medium
                 )
 
                 Spacer(
-                    modifier = Modifier.height(16.dp)
+                    modifier =
+                        Modifier.height(
+                            16.dp
+                        )
                 )
 
+                /*
+                 * Este reporte todavía es el dato visual
+                 * de prueba del Profile.
+                 *
+                 * Cuando Profile lea lostReports desde
+                 * Firestore, este ID simplemente será:
+                 *
+                 * report.id
+                 */
                 ReportCard(
-                    title = "Scientific calculator",
-                    subtitle = "Reported Sep 9 · ML",
-                    badge = "Possible match",
-                    onClick = onOpenReport
+                    reportId =
+                        "lost_test_001",
+
+                    title =
+                        "Scientific calculator",
+
+                    subtitle =
+                        "Reported Sep 9 · ML",
+
+                    badge =
+                        "Possible match",
+
+                    onClick =
+                        onOpenReport
                 )
 
                 Spacer(
-                    modifier = Modifier.height(16.dp)
+                    modifier =
+                        Modifier.height(
+                            16.dp
+                        )
                 )
 
                 ReportCard(
-                    title = "Laptop charger",
-                    subtitle = "Reported Aug 28 · Library",
-                    badge = "Open"
+                    reportId =
+                        "lost_test_002",
+
+                    title =
+                        "Laptop charger",
+
+                    subtitle =
+                        "Reported Aug 28 · Library",
+
+                    badge =
+                        "Open",
+
+                    onClick =
+                        onOpenReport
                 )
             }
         }
@@ -156,58 +276,96 @@ fun ProfileScreen(
 
 @Composable
 private fun ReportCard(
+    reportId: String,
     title: String,
     subtitle: String,
     badge: String,
-    onClick: () -> Unit = {}
+    onClick: (String) -> Unit = {}
 ) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(116.dp)
+            .height(
+                116.dp
+            )
             .border(
                 width = 1.dp,
-                color = CampusBorder,
-                shape = RoundedCornerShape(10.dp)
+                color =
+                    CampusBorder,
+                shape =
+                    RoundedCornerShape(
+                        10.dp
+                    )
             )
             .clickable {
-                onClick()
+
+                onClick(
+                    reportId
+                )
             }
-            .padding(10.dp)
+            .padding(
+                10.dp
+            )
     ) {
+
         ImagePlaceholder(
-            modifier = Modifier
-                .width(92.dp)
-                .fillMaxHeight()
+            modifier =
+                Modifier
+                    .width(
+                        92.dp
+                    )
+                    .fillMaxHeight()
         )
 
         Spacer(
-            modifier = Modifier.width(16.dp)
+            modifier =
+                Modifier.width(
+                    16.dp
+                )
         )
 
         Column {
+
             Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                text =
+                    title,
+
+                fontSize =
+                    16.sp,
+
+                fontWeight =
+                    FontWeight.Medium
             )
 
             Spacer(
-                modifier = Modifier.height(8.dp)
+                modifier =
+                    Modifier.height(
+                        8.dp
+                    )
             )
 
             Text(
-                text = subtitle,
-                fontSize = 13.sp,
-                color = CampusGray
+                text =
+                    subtitle,
+
+                fontSize =
+                    13.sp,
+
+                color =
+                    CampusGray
             )
 
             Spacer(
-                modifier = Modifier.height(14.dp)
+                modifier =
+                    Modifier.height(
+                        14.dp
+                    )
             )
 
             YellowBadge(
-                text = badge
+                text =
+                    badge
             )
         }
     }
