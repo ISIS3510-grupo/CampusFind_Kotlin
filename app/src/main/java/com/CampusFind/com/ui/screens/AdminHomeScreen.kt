@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AdminHomeScreen(
     email: String,
+    onRegisterFound: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -22,6 +23,9 @@ fun AdminHomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = email)
+        Button(onClick = onRegisterFound) {
+            Text(text = "Register found item")
+        }
         Button(onClick = onLogout) {
             Text(text = "Sign out")
         }

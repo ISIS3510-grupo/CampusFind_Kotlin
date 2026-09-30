@@ -46,6 +46,9 @@ fun AppNavigation() {
 
             AdminHomeScreen(
                 email = authenticationViewModel.getCurrentUserEmail(),
+                onRegisterFound = {
+                    navController.navigate(Routes.REPORT_FOUND)
+                },
                 onLogout = {
                     authenticationViewModel.logout()
                     navController.navigate(Routes.LOGIN) {
