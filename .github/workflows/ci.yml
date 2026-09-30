@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so SonarQube Cloud can compute new code and blame
 
       - uses: actions/setup-java@v4
         with:
@@ -30,9 +32,25 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest
+      - name: Unit tests with coverage
+        run: ./gradlew createDebugUnitTestCoverageReport
 
       - name: Lint
         run: ./gradlew lintDebug
         continue-on-error: true
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            app/build/reports/coverage/test/debug/
+            app/build/reports/lint-results-debug.*
+            app/build/reports/tests/
+          if-no-files-found: ignore
+
+      - name: SonarQube Cloud scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
