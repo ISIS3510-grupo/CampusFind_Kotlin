@@ -35,6 +35,23 @@ jobs:
       - name: Unit tests with coverage
         run: ./gradlew createDebugUnitTestCoverageReport
 
+      - name: Coverage summary
+        if: always()
+        run: |
+          report=app/build/reports/coverage/test/debug/report.xml
+          if [ -f "$report" ]; then
+            python3 - "$report" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root = ET.parse(sys.argv[1]).getroot()
+          line = next((c for c in root.findall("counter") if c.get("type") == "LINE"), None)
+          if line is not None:
+              covered, missed = int(line.get("covered")), int(line.get("missed"))
+              total = covered + missed
+              pct = 100 * covered / total if total else 0
+              print(f"### Line coverage: {pct:.1f}% ({covered}/{total} lines) - informative, not required")
+          PY
+          fi
+
       - name: Lint
         run: ./gradlew lintDebug
         continue-on-error: true
