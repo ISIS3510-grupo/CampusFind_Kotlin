@@ -345,7 +345,54 @@ fun AppNavigation(
                 }
             )
         }
+        composable(
+            Routes.REPORT_LOST
+        ) {
 
+            val locationViewModel:
+                    LocationViewModel =
+                viewModel()
+
+            val requestLocationPermission =
+                rememberLocationPermissionLauncher { status ->
+
+                    locationViewModel
+                        .onPermissionResult(
+                            status
+                        )
+                }
+
+            LaunchedEffect(Unit) {
+                requestLocationPermission()
+            }
+
+            val suggestedLocation =
+                locationViewModel
+                    .suggestedCampusLocation
+
+            ReportLostItemScreen(
+                suggestedLocation =
+                    suggestedLocation,
+
+                locationError =
+                    locationViewModel
+                        .errorMessage,
+
+                isLocationLoading =
+                    locationViewModel
+                        .isLoading,
+
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
+
+                onSubmit = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
         composable(
             route =
                 Routes.LOST_REPORT_DETAIL,
