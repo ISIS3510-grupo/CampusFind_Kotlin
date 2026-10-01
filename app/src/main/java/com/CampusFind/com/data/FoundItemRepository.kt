@@ -3,8 +3,8 @@ package com.CampusFind.com.data
 import android.content.Context
 import android.net.Uri
 import com.CampusFind.com.service.ConnectivityObserver
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONObject
@@ -124,17 +124,14 @@ class FoundItemRepository private constructor(private val context: Context) {
             return
         }
         isSaving = true
-        val item = mutableMapOf<String, Any>(
-            "title" to title,
-            "category" to category,
-            "publicDescription" to publicDescription,
-            "locationName" to locationName,
-            "status" to "available",
-            "reporterUid" to user.uid,
-            "createdAt" to Timestamp.now(),
-            "semesterId" to "2026-2",
-            "donationEligible" to false,
-            "donationStatus" to "none"
+        val photoPath = if (photoUri == null) null else "foundItems/$id.jpg"
+        val item = FoundItemFactory.create(
+            title = title,
+            category = category,
+            publicDescription = publicDescription,
+            locationName = locationName,
+            reporterUid = user.uid,
+            photoPath = photoPath
         )
 
         if (photoUri == null) {
@@ -142,11 +139,9 @@ class FoundItemRepository private constructor(private val context: Context) {
             return
         }
 
-        val photoPath = "foundItems/$id.jpg"
-        storage.reference.child(photoPath)
+        storage.reference.child(photoPath!!)
             .putFile(photoUri)
             .addOnSuccessListener {
-                item["photoPath"] = photoPath
                 saveDocument(id, item, onSuccess, onError)
             }
             .addOnFailureListener { exception ->
@@ -161,9 +156,11 @@ class FoundItemRepository private constructor(private val context: Context) {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        val document = item.toMutableMap()
+        document["createdAt"] = FieldValue.serverTimestamp()
         firestore.collection("foundItems")
             .document(id)
-            .set(item)
+            .set(document)
             .addOnSuccessListener {
                 val wasSendingPending = isSendingPending
                 isSaving = false

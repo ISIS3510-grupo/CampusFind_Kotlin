@@ -16,6 +16,7 @@ fun AdminHomeScreen(
     email: String,
     onRegisterFound: () -> Unit,
     onReportTimes: () -> Unit,
+    onReviewClaims: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -29,6 +30,9 @@ fun AdminHomeScreen(
         }
         Button(onClick = onReportTimes) {
             Text(text = "Average time to found")
+        }
+        Button(onClick = onReviewClaims) {
+            Text(text = "Review claims")
         }
         Button(onClick = onLogout) {
             Text(text = "Sign out")
