@@ -12,7 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-class ConnectivityObserver(context: Context) {
+class ConnectivityObserver(
+    context: Context,
+    private val onConnectionChanged: (Boolean) -> Unit = {}
+) {
 
     private val connectivityManager = context.applicationContext
         .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -52,6 +55,7 @@ class ConnectivityObserver(context: Context) {
         }
         isListening = true
         isConnected = hasInternetConnection()
+        onConnectionChanged(isConnected)
     }
 
     fun stopListening() {
@@ -65,7 +69,11 @@ class ConnectivityObserver(context: Context) {
     private fun updateConnection() {
         handler.post {
             if (isListening) {
-                isConnected = hasInternetConnection()
+                val connected = hasInternetConnection()
+                if (isConnected != connected) {
+                    isConnected = connected
+                    onConnectionChanged(connected)
+                }
             }
         }
     }
