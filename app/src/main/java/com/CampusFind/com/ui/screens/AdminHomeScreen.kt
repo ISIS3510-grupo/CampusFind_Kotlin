@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 fun AdminHomeScreen(
     email: String,
     onRegisterFound: () -> Unit,
+    onReportTimes: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -25,6 +26,9 @@ fun AdminHomeScreen(
         Text(text = email)
         Button(onClick = onRegisterFound) {
             Text(text = "Register found item")
+        }
+        Button(onClick = onReportTimes) {
+            Text(text = "Average time to found")
         }
         Button(onClick = onLogout) {
             Text(text = "Sign out")
