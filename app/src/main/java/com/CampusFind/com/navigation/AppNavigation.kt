@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
+import com.CampusFind.com.ui.screens.AdminClaimsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
 import com.CampusFind.com.ui.screens.LoginScreen
@@ -28,20 +29,23 @@ import com.CampusFind.com.ui.screens.ReportFoundItemScreen
 import com.CampusFind.com.ui.screens.ReportLostItemScreen
 import com.CampusFind.com.viewmodel.AuthenticationViewModel
 import com.CampusFind.com.viewmodel.LocationViewModel
+import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
-import com.CampusFind.com.viewmodel.LostReportsViewModel
 
 object Routes {
 
+    const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
     const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
     const val REPORT_LOST = "report_lost"
+
     const val LOST_REPORT_DETAIL =
         "lost_report_detail/{reportId}"
+
     const val MATCH_ALERT = "match_alert"
     const val REPORT_FOUND = "report_found"
 
@@ -223,6 +227,12 @@ fun AppNavigation(
                     )
                 },
 
+                onReviewClaims = {
+                    navController.navigate(
+                        Routes.ADMIN_CLAIMS
+                    )
+                },
+
                 onLogout = {
 
                     authenticationViewModel
@@ -237,6 +247,18 @@ fun AppNavigation(
                             inclusive = true
                         }
                     }
+                }
+            )
+        }
+
+        composable(
+            Routes.ADMIN_CLAIMS
+        ) {
+
+            AdminClaimsScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
                 }
             )
         }
@@ -276,6 +298,7 @@ fun AppNavigation(
             LaunchedEffect(
                 currentUserUid
             ) {
+
                 lostReportsViewModel
                     .observeReports(
                         currentUserUid
@@ -293,9 +316,12 @@ fun AppNavigation(
 
             ProfileScreen(
                 email = currentUserEmail,
-                displayName = profileViewModel.displayName,
-                role = profileViewModel.role,
-                reports = lostReportsViewModel.reports,
+                displayName =
+                    profileViewModel.displayName,
+                role =
+                    profileViewModel.role,
+                reports =
+                    lostReportsViewModel.reports,
 
                 onBack = {
                     navController
