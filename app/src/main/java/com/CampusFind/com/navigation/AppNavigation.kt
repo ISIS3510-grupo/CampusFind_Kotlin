@@ -19,6 +19,8 @@ object Routes {
     const val REPORT_FOUND = "report_found"
     const val HOME = "home"
     const val DROP_OFF = "drop_off"
+    const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
+    const val BIOMETRIC_VERIFY = "biometric_verify"
 }
 
 @Composable
@@ -123,6 +125,12 @@ fun AppNavigation() {
                     )
                 },
 
+                onReportBottleneck = {
+                    navController.navigate(
+                        Routes.ADMIN_REPORT_BOTTLENECK
+                    )
+                },
+
                 onLogout = {
 
                     authenticationViewModel.logout()
@@ -140,11 +148,14 @@ fun AppNavigation() {
         /*
          * ADMIN ANALYTICS
          */
-        composable(Routes.ADMIN_REPORT_TIMES) {
+        composable(
+            Routes.ADMIN_REPORT_BOTTLENECK
+        ) {
 
-            AdminReportTimesScreen(
+            AdminReportBottleneckScreen(
                 onBack = {
-                    navController.popBackStack()
+                    navController
+                        .popBackStack()
                 }
             )
         }
@@ -228,14 +239,27 @@ fun AppNavigation() {
                 },
 
                 onReviewMatch = {
-                    /*
-                     * Más adelante irá al detalle
-                     * real del found item.
-                     */
+
+                    navController.navigate(
+                        Routes.BIOMETRIC_VERIFY
+                    )
                 },
 
                 onNotMine = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            Routes.BIOMETRIC_VERIFY
+        ) {
+
+            BiometricVerificationScreen(
+                onBack = {
+
+                    navController
+                        .popBackStack()
                 }
             )
         }
