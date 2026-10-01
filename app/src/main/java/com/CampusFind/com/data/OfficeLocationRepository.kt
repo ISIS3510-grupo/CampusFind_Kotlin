@@ -21,7 +21,9 @@ class OfficeLocationRepository {
             .addOnSuccessListener { document ->
 
                 if (!document.exists()) {
+
                     onSuccess(null)
+
                     return@addOnSuccessListener
                 }
 
@@ -33,6 +35,23 @@ class OfficeLocationRepository {
                     (document.get("longitude") as? Number)
                         ?.toDouble()
 
+                if (
+                    latitude == null ||
+                    longitude == null
+                ) {
+
+                    onError(
+                        "Office coordinates are not available."
+                    )
+
+                    return@addOnSuccessListener
+                }
+
+                val radiusMeters =
+                    (document.get("radiusMeters") as? Number)
+                        ?.toDouble()
+                        ?: 120.0
+
                 val office =
                     OfficeLocation(
                         id = document.id,
@@ -40,6 +59,10 @@ class OfficeLocationRepository {
                         name =
                             document.getString("name")
                                 ?: "Lost & Found Office",
+
+                        code =
+                            document.getString("code")
+                                ?: "",
 
                         address =
                             document.getString("address")
@@ -49,12 +72,17 @@ class OfficeLocationRepository {
 
                         longitude = longitude,
 
+                        radiusMeters =
+                            radiusMeters,
+
                         active =
                             document.getBoolean("active")
                                 ?: true
                     )
 
-                onSuccess(office)
+                onSuccess(
+                    office
+                )
             }
             .addOnFailureListener { exception ->
 

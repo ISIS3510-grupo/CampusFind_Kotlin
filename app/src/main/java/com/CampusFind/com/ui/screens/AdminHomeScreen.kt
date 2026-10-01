@@ -16,68 +16,48 @@ fun AdminHomeScreen(
     email: String,
     onRegisterFound: () -> Unit,
     onReportTimes: () -> Unit,
+    onReviewClaims: () -> Unit,
     onReportBottleneck: () -> Unit,
     onLogout: () -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-
-        verticalArrangement =
-            Arrangement.Center,
-
-        horizontalAlignment =
-            Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text(
-            text = email
-        )
+        Text(text = email)
 
         Button(
-            onClick =
-                onRegisterFound
+            onClick = onRegisterFound
         ) {
-
-            Text(
-                text =
-                    "Register found item"
-            )
+            Text(text = "Register found item")
         }
 
         Button(
-            onClick =
-                onReportTimes
+            onClick = onReportTimes
         ) {
-
-            Text(
-                text =
-                    "Average time to found"
-            )
+            Text(text = "Average time to found")
         }
 
         Button(
-            onClick =
-                onReportBottleneck
+            onClick = onReviewClaims
         ) {
-
-            Text(
-                text =
-                    "Report bottleneck"
-            )
+            Text(text = "Review claims")
         }
 
         Button(
-            onClick =
-                onLogout
+            onClick = onReportBottleneck
         ) {
+            Text(text = "Report bottleneck")
+        }
 
-            Text(
-                text =
-                    "Sign out"
-            )
+        Button(
+            onClick = onLogout
+        ) {
+            Text(text = "Sign out")
         }
     }
 }
