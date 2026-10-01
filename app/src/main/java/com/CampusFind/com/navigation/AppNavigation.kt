@@ -345,6 +345,18 @@ fun AppNavigation(
         }
 
         composable(
+            Routes.ADMIN_REPORT_TIMES
+        ) {
+
+            AdminReportTimesScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+
+        composable(
             Routes.PROFILE
         ) {
 
