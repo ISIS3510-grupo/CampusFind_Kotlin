@@ -30,6 +30,8 @@ import com.CampusFind.com.viewmodel.AuthenticationViewModel
 import com.CampusFind.com.viewmodel.LocationViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
+import com.CampusFind.com.viewmodel.ProfileViewModel
+import com.CampusFind.com.viewmodel.LostReportsViewModel
 
 object Routes {
 
@@ -255,7 +257,46 @@ fun AppNavigation(
             Routes.PROFILE
         ) {
 
+            val authenticationViewModel:
+                    AuthenticationViewModel =
+                viewModel()
+
+            val lostReportsViewModel:
+                    LostReportsViewModel =
+                viewModel()
+
+            val profileViewModel:
+                    ProfileViewModel =
+                viewModel()
+
+            val currentUserUid =
+                authenticationViewModel
+                    .getCurrentUserUid()
+
+            LaunchedEffect(
+                currentUserUid
+            ) {
+                lostReportsViewModel
+                    .observeReports(
+                        currentUserUid
+                    )
+
+                profileViewModel
+                    .loadUser(
+                        currentUserUid
+                    )
+            }
+
+            val currentUserEmail =
+                authenticationViewModel
+                    .getCurrentUserEmail()
+
             ProfileScreen(
+                email = currentUserEmail,
+                displayName = profileViewModel.displayName,
+                role = profileViewModel.role,
+                reports = lostReportsViewModel.reports,
+
                 onBack = {
                     navController
                         .popBackStack()
@@ -268,7 +309,6 @@ fun AppNavigation(
                 },
 
                 onOpenReport = { reportId ->
-
                     navController.navigate(
                         Routes.lostReportDetail(
                             reportId

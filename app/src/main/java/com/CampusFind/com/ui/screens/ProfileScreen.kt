@@ -37,9 +37,16 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
+import com.CampusFind.com.model.LostReport
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun ProfileScreen(
+    email: String,
+    displayName: String,
+    role: String,
+    reports: List<LostReport>,
     onBack: () -> Unit = {},
     onReportLost: () -> Unit = {},
     onOpenReport: (String) -> Unit = {}
@@ -88,7 +95,7 @@ fun ProfileScreen(
                 ScreenTitle(
                     title = "Profile",
                     subtitle =
-                        "Nicolas Martinez · Student",
+                        "$displayName · ${role.replaceFirstChar { it.uppercase() }}",
                     onBack = onBack,
                     titleSize = 25.sp
                 )
@@ -152,7 +159,7 @@ fun ProfileScreen(
 
                         Text(
                             text =
-                                "n.martinez@uniandes.edu.co",
+                                email,
 
                             fontSize =
                                 16.sp,
@@ -223,49 +230,35 @@ fun ProfileScreen(
                         )
                 )
 
-                /*
-                 * Estos reportes todavía son datos visuales
-                 * de prueba del Profile.
-                 *
-                 * Cuando Profile lea lostReports desde
-                 * Firestore, el reportId simplemente será:
-                 *
-                 * report.id
-                 */
-                ReportCard(
-                    reportId =
-                        "lost_test_001",
 
-                    title =
-                        "Scientific calculator",
+                reports.forEachIndexed { index, report ->
 
-                    subtitle =
-                        "Reported Sep 9 · ML",
+                    val dateText =
+                        report.reportedAt
+                            ?.toDate()
+                            ?.let { date ->
+                                SimpleDateFormat(
+                                    "MMM d",
+                                    Locale.ENGLISH
+                                ).format(date)
+                            }
+                            ?: "Unknown date"
 
-                    onClick =
-                        onOpenReport
-                )
+                    ReportCard(
+                        reportId = report.id,
+                        title = report.title,
+                        subtitle =
+                            "Reported $dateText · ${report.locationName}",
+                        onClick = onOpenReport
+                    )
 
-                Spacer(
-                    modifier =
-                        Modifier.height(
-                            16.dp
+                    if (index < reports.lastIndex) {
+                        Spacer(
+                            modifier =
+                                Modifier.height(16.dp)
                         )
-                )
-
-                ReportCard(
-                    reportId =
-                        "lost_test_002",
-
-                    title =
-                        "Laptop charger",
-
-                    subtitle =
-                        "Reported Aug 28 · Library",
-
-                    onClick =
-                        onOpenReport
-                )
+                    }
+                }
             }
         }
     }
