@@ -171,4 +171,8 @@ class AuthenticationService {
                 UniandesEmailValidator.isValid(user.email) &&
                 validatedRole == UserRole.STUDENT
     }
+
+    fun getCurrentUserUid(): String {
+        return firebaseAuth.currentUser?.uid ?: ""
+    }
 }
