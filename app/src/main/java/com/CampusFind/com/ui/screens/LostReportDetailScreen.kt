@@ -16,7 +16,7 @@ import com.CampusFind.com.ui.components.*
 
 @Composable
 fun LostReportDetailScreen(
-    matchCount: Int = 1,
+    matchCount: Int = 0,
     onBack: () -> Unit = {},
     onMatchClick: () -> Unit = {},
     onRecoveredElsewhere: () -> Unit = {}
@@ -36,6 +36,7 @@ fun LostReportDetailScreen(
                 .padding(padding)
                 .padding(24.dp)
         ) {
+
             ScreenTitle(
                 title = "Lost report",
                 subtitle = "Scientific calculator",
@@ -46,16 +47,14 @@ fun LostReportDetailScreen(
                 modifier = Modifier.height(16.dp)
             )
 
-            if (matchCount > 0) {
-                YellowBadge(
-                    text =
-                        if (matchCount == 1) {
-                            "Possible match"
-                        } else {
-                            "$matchCount possible matches"
-                        }
-                )
-            }
+            YellowBadge(
+                text =
+                    if (matchCount == 1) {
+                        "1 possible match"
+                    } else {
+                        "$matchCount possible matches"
+                    }
+            )
 
             Spacer(
                 modifier = Modifier.height(18.dp)
@@ -71,6 +70,7 @@ fun LostReportDetailScreen(
                     )
                     .padding(18.dp)
             ) {
+
                 Text(
                     text = "Report details",
                     fontSize = 16.sp,
@@ -111,72 +111,82 @@ fun LostReportDetailScreen(
                 modifier = Modifier.height(30.dp)
             )
 
-            Text(
-                text = "Possible match",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            )
+            if (matchCount > 0) {
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(116.dp)
-                    .border(
-                        width = 1.dp,
-                        color = CampusBorder,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .clickable {
-                        onMatchClick()
-                    }
-                    .padding(10.dp)
-            ) {
-                ImagePlaceholder(
-                    modifier = Modifier
-                        .width(92.dp)
-                        .fillMaxHeight()
+                Text(
+                    text =
+                        if (matchCount == 1) {
+                            "Possible match"
+                        } else {
+                            "Possible matches"
+                        },
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
                 )
 
                 Spacer(
-                    modifier = Modifier.width(16.dp)
+                    modifier = Modifier.height(16.dp)
                 )
 
-                Column {
-                    Text(
-                        text = "Scientific calculator",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(116.dp)
+                        .border(
+                            width = 1.dp,
+                            color = CampusBorder,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .clickable {
+                            onMatchClick()
+                        }
+                        .padding(10.dp)
+                ) {
+
+                    ImagePlaceholder(
+                        modifier = Modifier
+                            .width(92.dp)
+                            .fillMaxHeight()
                     )
 
                     Spacer(
-                        modifier = Modifier.height(8.dp)
+                        modifier = Modifier.width(16.dp)
                     )
 
-                    Text(
-                        text = "Found in ML · Today",
-                        fontSize = 13.sp,
-                        color = CampusGray
-                    )
+                    Column {
 
-                    Spacer(
-                        modifier = Modifier.height(20.dp)
-                    )
+                        Text(
+                            text = "Scientific calculator",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
 
-                    Text(
-                        text = "View details →",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        Text(
+                            text = "Found in ML · Today",
+                            fontSize = 13.sp,
+                            color = CampusGray
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        Text(
+                            text = "View details →",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
-            }
 
-            Spacer(
-                modifier = Modifier.height(28.dp)
-            )
+                Spacer(
+                    modifier = Modifier.height(28.dp)
+                )
+            }
 
             Text(
                 text = "The report remains active until staff marks the item as delivered.",

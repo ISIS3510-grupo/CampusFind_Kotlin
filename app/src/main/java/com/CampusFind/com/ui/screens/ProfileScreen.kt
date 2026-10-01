@@ -19,12 +19,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.CampusFind.com.ui.components.BottomNavigationBar
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
@@ -34,6 +36,7 @@ import com.CampusFind.com.ui.components.PrimaryButton
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
+import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 
 @Composable
 fun ProfileScreen(
@@ -221,11 +224,11 @@ fun ProfileScreen(
                 )
 
                 /*
-                 * Este reporte todavía es el dato visual
+                 * Estos reportes todavía son datos visuales
                  * de prueba del Profile.
                  *
                  * Cuando Profile lea lostReports desde
-                 * Firestore, este ID simplemente será:
+                 * Firestore, el reportId simplemente será:
                  *
                  * report.id
                  */
@@ -238,9 +241,6 @@ fun ProfileScreen(
 
                     subtitle =
                         "Reported Sep 9 · ML",
-
-                    badge =
-                        "Possible match",
 
                     onClick =
                         onOpenReport
@@ -263,9 +263,6 @@ fun ProfileScreen(
                     subtitle =
                         "Reported Aug 28 · Library",
 
-                    badge =
-                        "Open",
-
                     onClick =
                         onOpenReport
                 )
@@ -279,9 +276,42 @@ private fun ReportCard(
     reportId: String,
     title: String,
     subtitle: String,
-    badge: String,
     onClick: (String) -> Unit = {}
 ) {
+
+    /*
+     * Cada reporte observa únicamente los matches
+     * asociados a su propio reportId.
+     *
+     * Esto responde la BQ Type 2:
+     * "How many possible matches are found for a
+     * student's lost-item report?"
+     */
+    val possibleMatchesViewModel:
+            PossibleMatchesViewModel =
+        viewModel(
+            key = "matches_$reportId"
+        )
+
+    LaunchedEffect(
+        reportId
+    ) {
+        possibleMatchesViewModel
+            .observeMatches(
+                reportId = reportId
+            )
+    }
+
+    val matchCount =
+        possibleMatchesViewModel
+            .matchCount
+
+    val badgeText =
+        if (matchCount == 1) {
+            "1 possible match"
+        } else {
+            "$matchCount possible matches"
+        }
 
     Row(
         modifier = Modifier
@@ -365,7 +395,7 @@ private fun ReportCard(
 
             YellowBadge(
                 text =
-                    badge
+                    badgeText
             )
         }
     }

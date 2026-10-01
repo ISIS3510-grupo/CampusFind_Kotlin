@@ -340,7 +340,7 @@ fun AppNavigation(
             MatchAlertScreen(
                 onBack = {
                     navController
-                        .popBackStack()
+                        .navigateUp()
                 },
 
                 onReviewMatch = {
