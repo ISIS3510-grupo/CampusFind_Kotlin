@@ -1,12 +1,15 @@
 package com.CampusFind.com.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.CampusFind.com.ui.screens.*
+import com.CampusFind.com.viewmodel.AuthenticationViewModel
 
 object Routes {
+    const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
     const val REPORT_LOST = "report_lost"
@@ -31,7 +34,26 @@ fun AppNavigation() {
                     navController.navigate(Routes.PROFILE)
                 },
                 onStaffLogin = {
-                    // Se conectará luego con el login de staff.
+                    navController.navigate(Routes.ADMIN_HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.ADMIN_HOME) {
+            val authenticationViewModel: AuthenticationViewModel = viewModel()
+
+            AdminHomeScreen(
+                email = authenticationViewModel.getCurrentUserEmail(),
+                onRegisterFound = {
+                    navController.navigate(Routes.REPORT_FOUND)
+                },
+                onLogout = {
+                    authenticationViewModel.logout()
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.ADMIN_HOME) { inclusive = true }
+                    }
                 }
             )
         }
