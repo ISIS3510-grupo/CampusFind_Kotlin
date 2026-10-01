@@ -9,6 +9,7 @@ import com.CampusFind.com.ui.screens.*
 import com.CampusFind.com.viewmodel.AuthenticationViewModel
 
 object Routes {
+    const val ADMIN_REPORT_TIMES = "admin_report_times"
     const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
@@ -49,11 +50,22 @@ fun AppNavigation() {
                 onRegisterFound = {
                     navController.navigate(Routes.REPORT_FOUND)
                 },
+                onReportTimes = {
+                    navController.navigate(Routes.ADMIN_REPORT_TIMES)
+                },
                 onLogout = {
                     authenticationViewModel.logout()
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.ADMIN_HOME) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        composable(Routes.ADMIN_REPORT_TIMES) {
+            AdminReportTimesScreen(
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

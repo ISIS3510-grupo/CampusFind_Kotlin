@@ -8,6 +8,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
 import com.CampusFind.com.data.FoundItemRepository
-import com.CampusFind.com.service.ConnectivityObserver
 import com.CampusFind.com.ui.components.*
 import java.io.File
 
@@ -37,14 +38,15 @@ fun ReportFoundItemScreen(
     onCancel: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val foundItemRepository = remember { FoundItemRepository() }
-    val connectivityObserver = remember(context) { ConnectivityObserver(context) }
+    val foundItemRepository = remember { FoundItemRepository.getInstance(context) }
+    val connectivityObserver = foundItemRepository.connectivityObserver
 
-    DisposableEffect(connectivityObserver) {
-        connectivityObserver.startListening()
-        onDispose {
-            connectivityObserver.stopListening()
-        }
+    LaunchedEffect(foundItemRepository) {
+        foundItemRepository.sendPendingItems()
+    }
+
+    var itemId by rememberSaveable {
+        mutableStateOf<String?>(null)
     }
 
     var isSaving by remember {
@@ -87,6 +89,7 @@ fun ReportFoundItemScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(
                 horizontal = 24.dp,
                 vertical = 22.dp
@@ -242,7 +245,7 @@ fun ReportFoundItemScreen(
         )
 
         Spacer(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.height(24.dp)
         )
 
         if (!connectivityObserver.isConnected) {
@@ -261,23 +264,51 @@ fun ReportFoundItemScreen(
             text = if (isSaving) "Saving..." else "Continue to drop-off",
             onClick = {
                 if (!isSaving) {
+                    if (itemId == null) {
+                        itemId = foundItemRepository.createId()
+                    }
                     isSaving = true
-                    foundItemRepository.saveFoundItem(
-                        title = description,
-                        category = category,
-                        publicDescription = description,
-                        locationName = location,
-                        photoUri = photoUri,
-                        onSuccess = {
-                            isSaving = false
-                            Toast.makeText(context, "Found item saved.", Toast.LENGTH_SHORT).show()
-                            onContinue()
-                        },
-                        onError = { error ->
-                            isSaving = false
-                            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                        }
-                    )
+                    if (!connectivityObserver.isConnected) {
+                        foundItemRepository.saveOffline(
+                            id = itemId!!,
+                            title = description,
+                            category = category,
+                            publicDescription = description,
+                            locationName = location,
+                            photoUri = photoUri,
+                            onSuccess = {
+                                isSaving = false
+                                Toast.makeText(
+                                    context,
+                                    "Saved offline. It will be sent when you are back online.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                onContinue()
+                            },
+                            onError = { error ->
+                                isSaving = false
+                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    } else {
+                        foundItemRepository.saveFoundItem(
+                            id = itemId!!,
+                            title = description,
+                            category = category,
+                            publicDescription = description,
+                            locationName = location,
+                            photoUri = photoUri,
+                            onSuccess = {
+                                isSaving = false
+                                Toast.makeText(context, "Found item saved.", Toast.LENGTH_SHORT).show()
+                                onContinue()
+                            },
+                            onError = { error ->
+                                isSaving = false
+                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
                 }
             }
         )
