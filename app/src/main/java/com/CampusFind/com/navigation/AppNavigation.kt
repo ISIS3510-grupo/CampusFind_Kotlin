@@ -18,18 +18,23 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
+import com.CampusFind.com.ui.screens.AdminHomeScreen
+import com.CampusFind.com.ui.screens.AdminReportTimesScreen
 import com.CampusFind.com.ui.screens.LoginScreen
 import com.CampusFind.com.ui.screens.LostReportDetailScreen
 import com.CampusFind.com.ui.screens.MatchAlertScreen
 import com.CampusFind.com.ui.screens.ProfileScreen
 import com.CampusFind.com.ui.screens.ReportFoundItemScreen
 import com.CampusFind.com.ui.screens.ReportLostItemScreen
+import com.CampusFind.com.viewmodel.AuthenticationViewModel
 import com.CampusFind.com.viewmodel.LocationViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 
 object Routes {
 
+    const val ADMIN_REPORT_TIMES = "admin_report_times"
+    const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
     const val REPORT_LOST = "report_lost"
@@ -49,7 +54,7 @@ object Routes {
 fun AppNavigation(
     notificationMatchId: String? = null,
     onNotificationNavigationHandled: () -> Unit = {}
-)  {
+) {
 
     val navController =
         rememberNavController()
@@ -168,9 +173,6 @@ fun AppNavigation(
             LoginScreen(
                 onStudentLogin = {
 
-                    // Cuando el login real de Firebase
-                    // esté conectado, empieza a observar
-                    // las notificaciones del usuario.
                     notificationsViewModel
                         .startObserving()
 
@@ -178,9 +180,73 @@ fun AppNavigation(
                         Routes.PROFILE
                     )
                 },
+
                 onStaffLogin = {
-                    // Se conectará posteriormente
-                    // con el login real de staff.
+
+                    navController.navigate(
+                        Routes.ADMIN_HOME
+                    ) {
+                        popUpTo(
+                            Routes.LOGIN
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.ADMIN_HOME
+        ) {
+
+            val authenticationViewModel:
+                    AuthenticationViewModel =
+                viewModel()
+
+            AdminHomeScreen(
+                email =
+                    authenticationViewModel
+                        .getCurrentUserEmail(),
+
+                onRegisterFound = {
+                    navController.navigate(
+                        Routes.REPORT_FOUND
+                    )
+                },
+
+                onReportTimes = {
+                    navController.navigate(
+                        Routes.ADMIN_REPORT_TIMES
+                    )
+                },
+
+                onLogout = {
+
+                    authenticationViewModel
+                        .logout()
+
+                    navController.navigate(
+                        Routes.LOGIN
+                    ) {
+                        popUpTo(
+                            Routes.ADMIN_HOME
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.ADMIN_REPORT_TIMES
+        ) {
+
+            AdminReportTimesScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
                 }
             )
         }
@@ -191,7 +257,8 @@ fun AppNavigation(
 
             ProfileScreen(
                 onBack = {
-                    navController.popBackStack()
+                    navController
+                        .popBackStack()
                 },
 
                 onReportLost = {
@@ -249,21 +316,13 @@ fun AppNavigation(
                         .isLoading,
 
                 onBack = {
-                    navController.popBackStack()
+                    navController
+                        .popBackStack()
                 },
 
                 onSubmit = {
-                    /*
-                     * Cuando Report Lost Item guarde
-                     * realmente el reporte en Firestore,
-                     * aquí recibiremos el reportId creado
-                     * y navegaremos usando:
-                     *
-                     * Routes.lostReportDetail(reportId)
-                     *
-                     * Por ahora regresamos al Profile.
-                     */
-                    navController.popBackStack()
+                    navController
+                        .popBackStack()
                 }
             )
         }
@@ -302,6 +361,7 @@ fun AppNavigation(
                 if (
                     reportId.isNotBlank()
                 ) {
+
                     possibleMatchesViewModel
                         .observeMatches(
                             reportId =
@@ -378,4 +438,3 @@ fun AppNavigation(
         }
     }
 }
-

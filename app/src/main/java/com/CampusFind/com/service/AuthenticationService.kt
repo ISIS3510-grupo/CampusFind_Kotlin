@@ -1,5 +1,6 @@
 package com.CampusFind.com.service
 
+import com.CampusFind.com.model.UserRole
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -8,11 +9,30 @@ class AuthenticationService {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
-    private var studentRoleValidated = false
+    private var validatedRole: UserRole? = null
 
-    fun signInStudent(
+    fun loginStudent(
         email: String,
         password: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        signIn(email, password, UserRole.STUDENT, onSuccess, onError)
+    }
+
+    fun loginAdmin(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        signIn(email, password, UserRole.ADMIN, onSuccess, onError)
+    }
+
+    private fun signIn(
+        email: String,
+        password: String,
+        expectedRole: UserRole,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -40,7 +60,7 @@ class AuthenticationService {
             .addOnCompleteListener { task ->
 
                 if (!task.isSuccessful) {
-                    studentRoleValidated = false
+                    validatedRole = null
 
                     onError(
                         task.exception?.localizedMessage
@@ -53,13 +73,13 @@ class AuthenticationService {
                 val user = firebaseAuth.currentUser
 
                 if (user == null) {
-                    studentRoleValidated = false
+                    validatedRole = null
                     onError("Authentication failed.")
                     return@addOnCompleteListener
                 }
 
                 if (!UniandesEmailValidator.isValid(user.email)) {
-                    studentRoleValidated = false
+                    validatedRole = null
                     firebaseAuth.signOut()
 
                     onError(
@@ -70,7 +90,7 @@ class AuthenticationService {
                 }
 
                 if (!user.isEmailVerified) {
-                    studentRoleValidated = false
+                    validatedRole = null
                     firebaseAuth.signOut()
 
                     onError(
@@ -87,7 +107,7 @@ class AuthenticationService {
                     .addOnSuccessListener { document ->
 
                         if (!document.exists()) {
-                            studentRoleValidated = false
+                            validatedRole = null
                             firebaseAuth.signOut()
 
                             onError(
@@ -105,36 +125,40 @@ class AuthenticationService {
                          * allow accounts whose Firestore
                          * role is exactly "student".
                          */
-                        if (role != "student") {
-                            studentRoleValidated = false
+                        if (!UserRoleValidator.isValid(role, expectedRole)) {
+                            validatedRole = null
                             firebaseAuth.signOut()
 
                             onError(
-                                "This account does not have student access."
+                                "This account does not have ${expectedRole.firestoreValue} access."
                             )
 
                             return@addOnSuccessListener
                         }
 
-                        studentRoleValidated = true
+                        validatedRole = expectedRole
 
                         onSuccess()
                     }
                     .addOnFailureListener { exception ->
 
-                        studentRoleValidated = false
+                        validatedRole = null
                         firebaseAuth.signOut()
 
                         onError(
                             exception.localizedMessage
-                                ?: "Unable to verify student role."
+                                ?: "Unable to verify ${expectedRole.firestoreValue} role."
                         )
                     }
             }
     }
 
+    fun getCurrentUserEmail(): String {
+        return firebaseAuth.currentUser?.email ?: ""
+    }
+
     fun signOut() {
-        studentRoleValidated = false
+        validatedRole = null
         firebaseAuth.signOut()
     }
 
@@ -145,6 +169,6 @@ class AuthenticationService {
         return user != null &&
                 user.isEmailVerified &&
                 UniandesEmailValidator.isValid(user.email) &&
-                studentRoleValidated
+                validatedRole == UserRole.STUDENT
     }
 }
