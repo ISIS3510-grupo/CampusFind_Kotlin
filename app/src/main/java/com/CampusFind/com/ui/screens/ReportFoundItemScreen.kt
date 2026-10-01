@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
 import com.CampusFind.com.data.FoundItemRepository
+import com.CampusFind.com.service.ConnectivityObserver
 import com.CampusFind.com.ui.components.*
 import java.io.File
 
@@ -37,6 +38,14 @@ fun ReportFoundItemScreen(
 ) {
     val context = LocalContext.current
     val foundItemRepository = remember { FoundItemRepository() }
+    val connectivityObserver = remember(context) { ConnectivityObserver(context) }
+
+    DisposableEffect(connectivityObserver) {
+        connectivityObserver.startListening()
+        onDispose {
+            connectivityObserver.stopListening()
+        }
+    }
 
     var isSaving by remember {
         mutableStateOf(false)
@@ -235,6 +244,18 @@ fun ReportFoundItemScreen(
         Spacer(
             modifier = Modifier.weight(1f)
         )
+
+        if (!connectivityObserver.isConnected) {
+            Text(
+                text = "No internet connection",
+                fontSize = 13.sp,
+                color = CampusGray
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+        }
 
         PrimaryButton(
             text = if (isSaving) "Saving..." else "Continue to drop-off",
