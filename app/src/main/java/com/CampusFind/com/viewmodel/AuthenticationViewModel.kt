@@ -40,7 +40,7 @@ class AuthenticationViewModel : ViewModel() {
         isLoading = true
         errorMessage = null
 
-        authenticationService.signInStudent(
+        authenticationService.loginStudent(
             email = email,
             password = password,
 
@@ -57,6 +57,47 @@ class AuthenticationViewModel : ViewModel() {
                 errorMessage = error
             }
         )
+    }
+
+    fun loginAdmin(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit
+    ) {
+        if (email.isBlank()) {
+            errorMessage = "Enter your Uniandes email."
+            return
+        }
+
+        if (password.isBlank()) {
+            errorMessage = "Enter your password."
+            return
+        }
+
+        isLoading = true
+        errorMessage = null
+
+        authenticationService.loginAdmin(
+            email = email,
+            password = password,
+
+            onSuccess = {
+                isLoading = false
+                isAuthenticated = true
+                errorMessage = null
+                onSuccess()
+            },
+
+            onError = { error ->
+                isLoading = false
+                isAuthenticated = false
+                errorMessage = error
+            }
+        )
+    }
+
+    fun getCurrentUserEmail(): String {
+        return authenticationService.getCurrentUserEmail()
     }
 
     fun clearError() {
