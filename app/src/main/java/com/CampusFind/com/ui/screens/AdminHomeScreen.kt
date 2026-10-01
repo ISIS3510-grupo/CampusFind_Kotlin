@@ -17,6 +17,7 @@ fun AdminHomeScreen(
     onRegisterFound: () -> Unit,
     onReportTimes: () -> Unit,
     onReviewClaims: () -> Unit,
+    onOwnershipRates: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -33,6 +34,9 @@ fun AdminHomeScreen(
         }
         Button(onClick = onReviewClaims) {
             Text(text = "Review claims")
+        }
+        Button(onClick = onOwnershipRates) {
+            Text(text = "Verification rate")
         }
         Button(onClick = onLogout) {
             Text(text = "Sign out")
