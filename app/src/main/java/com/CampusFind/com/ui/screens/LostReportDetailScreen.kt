@@ -12,11 +12,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.CampusFind.com.model.LostReport
+import java.text.SimpleDateFormat
+import java.util.Locale
+import com.CampusFind.com.viewmodel.FoundItemDetail
 import com.CampusFind.com.ui.components.*
 
 @Composable
 fun LostReportDetailScreen(
     matchCount: Int = 0,
+    report: LostReport? = null,
+    foundItem: FoundItemDetail? = null,
     onBack: () -> Unit = {},
     onMatchClick: () -> Unit = {},
     onRecoveredElsewhere: () -> Unit = {}
@@ -39,7 +45,7 @@ fun LostReportDetailScreen(
 
             ScreenTitle(
                 title = "Lost report",
-                subtitle = "Scientific calculator",
+                subtitle = report?.title ?: "",
                 onBack = onBack
             )
 
@@ -82,7 +88,7 @@ fun LostReportDetailScreen(
                 )
 
                 Text(
-                    text = "Lost at Mario Laserna Building",
+                    text = "Lost at ${report?.locationName ?: ""}",
                     fontSize = 16.sp
                 )
 
@@ -91,7 +97,15 @@ fun LostReportDetailScreen(
                 )
 
                 Text(
-                    text = "Sep 9 · 2:30 PM",
+                    text = report?.reportedAt
+                        ?.toDate()
+                        ?.let { date ->
+                            SimpleDateFormat(
+                                "MMM d · h:mm a",
+                                Locale.ENGLISH
+                            ).format(date)
+                        }
+                        ?: "",
                     fontSize = 13.sp,
                     color = CampusGray
                 )
@@ -101,7 +115,17 @@ fun LostReportDetailScreen(
                 )
 
                 Text(
-                    text = "Status updated 20 minutes ago",
+                    text = report?.statusChangedAt
+                        ?.toDate()
+                        ?.let { date ->
+                            "Status updated ${
+                                SimpleDateFormat(
+                                    "MMM d · h:mm a",
+                                    Locale.ENGLISH
+                                ).format(date)
+                            }"
+                        }
+                        ?: "Status: ${report?.status ?: ""}",
                     fontSize = 13.sp,
                     color = CampusGray
                 )
@@ -156,7 +180,7 @@ fun LostReportDetailScreen(
                     Column {
 
                         Text(
-                            text = "Scientific calculator",
+                            text = foundItem?.title ?: "",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -166,7 +190,7 @@ fun LostReportDetailScreen(
                         )
 
                         Text(
-                            text = "Found in ML · Today",
+                            text = "Found in ${foundItem?.locationName ?: ""}",
                             fontSize = 13.sp,
                             color = CampusGray
                         )

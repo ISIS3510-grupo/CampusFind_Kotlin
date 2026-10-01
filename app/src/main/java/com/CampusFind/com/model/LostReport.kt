@@ -9,5 +9,6 @@ data class LostReport(
     val locationName: String = "",
     val status: String = "",
     val reportedAt: Timestamp? = null,
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    val statusChangedAt: Timestamp? = null,
 )

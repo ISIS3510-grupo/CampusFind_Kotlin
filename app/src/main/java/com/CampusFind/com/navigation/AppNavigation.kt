@@ -33,6 +33,8 @@ import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
+import com.CampusFind.com.viewmodel.LostReportDetailViewModel
+import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
 
 object Routes {
 
@@ -345,55 +347,6 @@ fun AppNavigation(
         }
 
         composable(
-            Routes.REPORT_LOST
-        ) {
-
-            val locationViewModel:
-                    LocationViewModel =
-                viewModel()
-
-            val requestLocationPermission =
-                rememberLocationPermissionLauncher { status ->
-
-                    locationViewModel
-                        .onPermissionResult(
-                            status
-                        )
-                }
-
-            LaunchedEffect(Unit) {
-                requestLocationPermission()
-            }
-
-            val suggestedLocation =
-                locationViewModel
-                    .suggestedCampusLocation
-
-            ReportLostItemScreen(
-                suggestedLocation =
-                    suggestedLocation,
-
-                locationError =
-                    locationViewModel
-                        .errorMessage,
-
-                isLocationLoading =
-                    locationViewModel
-                        .isLoading,
-
-                onBack = {
-                    navController
-                        .popBackStack()
-                },
-
-                onSubmit = {
-                    navController
-                        .popBackStack()
-                }
-            )
-        }
-
-        composable(
             route =
                 Routes.LOST_REPORT_DETAIL,
 
@@ -420,9 +373,22 @@ fun AppNavigation(
                     PossibleMatchesViewModel =
                 viewModel()
 
+            val foundItemDetailViewModel:
+                    FoundItemDetailViewModel =
+                viewModel()
+
+            val lostReportDetailViewModel:
+                    LostReportDetailViewModel =
+                viewModel()
+
             LaunchedEffect(
                 reportId
             ) {
+
+                lostReportDetailViewModel
+                    .loadReport(
+                        reportId
+                    )
 
                 if (
                     reportId.isNotBlank()
@@ -436,7 +402,35 @@ fun AppNavigation(
                 }
             }
 
+            LaunchedEffect(
+                possibleMatchesViewModel
+                    .matches
+                    .firstOrNull()
+                    ?.foundItemId
+            ) {
+
+                val foundItemId =
+                    possibleMatchesViewModel
+                        .matches
+                        .firstOrNull()
+                        ?.foundItemId
+                        ?: return@LaunchedEffect
+
+                foundItemDetailViewModel
+                    .loadFoundItem(
+                        foundItemId
+                    )
+            }
+
             LostReportDetailScreen(
+                report =
+                    lostReportDetailViewModel
+                        .report,
+
+                foundItem =
+                    foundItemDetailViewModel
+                        .foundItem,
+
                 matchCount =
                     possibleMatchesViewModel
                         .matchCount,
