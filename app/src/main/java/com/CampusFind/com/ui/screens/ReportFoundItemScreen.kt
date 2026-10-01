@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
+import com.CampusFind.com.data.FoundItemRepository
 import com.CampusFind.com.ui.components.*
 import java.io.File
 
@@ -35,6 +36,11 @@ fun ReportFoundItemScreen(
     onCancel: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val foundItemRepository = remember { FoundItemRepository() }
+
+    var isSaving by remember {
+        mutableStateOf(false)
+    }
 
     var photoUri by rememberSaveable {
         mutableStateOf<Uri?>(null)
@@ -231,8 +237,28 @@ fun ReportFoundItemScreen(
         )
 
         PrimaryButton(
-            text = "Continue to drop-off",
-            onClick = onContinue
+            text = if (isSaving) "Saving..." else "Continue to drop-off",
+            onClick = {
+                if (!isSaving) {
+                    isSaving = true
+                    foundItemRepository.saveFoundItem(
+                        title = description,
+                        category = category,
+                        publicDescription = description,
+                        locationName = location,
+                        photoUri = photoUri,
+                        onSuccess = {
+                            isSaving = false
+                            Toast.makeText(context, "Found item saved.", Toast.LENGTH_SHORT).show()
+                            onContinue()
+                        },
+                        onError = { error ->
+                            isSaving = false
+                            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
+            }
         )
 
         Spacer(
