@@ -74,6 +74,10 @@ fun ReportFoundItemScreen(
         mutableStateOf("")
     }
 
+    var privateCharacteristics by rememberSaveable {
+        mutableStateOf("")
+    }
+
     var description by remember {
         mutableStateOf("")
     }
@@ -238,6 +242,22 @@ fun ReportFoundItemScreen(
             modifier = Modifier.height(24.dp)
         )
 
+        FormLabel(
+            text = "Private ownership detail"
+        )
+
+        CampusTextField(
+            value = privateCharacteristics,
+            onValueChange = {
+                privateCharacteristics = it
+            },
+            placeholder = "Example: serial / unique mark"
+        )
+
+        Spacer(
+            modifier = Modifier.height(14.dp)
+        )
+
         Text(
             text = "Do not publish private ownership details.",
             fontSize = 13.sp,
@@ -276,6 +296,7 @@ fun ReportFoundItemScreen(
                             publicDescription = description,
                             locationName = location,
                             photoUri = photoUri,
+                            privateCharacteristics = privateCharacteristics,
                             onSuccess = {
                                 isSaving = false
                                 Toast.makeText(
@@ -298,6 +319,7 @@ fun ReportFoundItemScreen(
                             publicDescription = description,
                             locationName = location,
                             photoUri = photoUri,
+                            privateCharacteristics = privateCharacteristics,
                             onSuccess = {
                                 isSaving = false
                                 Toast.makeText(context, "Found item saved.", Toast.LENGTH_SHORT).show()
