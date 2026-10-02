@@ -43,6 +43,7 @@ import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
 import com.CampusFind.com.ui.screens.DonationPotentialScreen
 import com.CampusFind.com.viewmodel.DonationPotentialViewModel
+import com.CampusFind.com.viewmodel.SmartMatchingViewModel
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -524,6 +525,10 @@ fun AppNavigation(
                     LostReportDetailViewModel =
                 viewModel()
 
+            val smartMatchingViewModel:
+                    SmartMatchingViewModel =
+                viewModel()
+
             LaunchedEffect(
                 reportId
             ) {
@@ -543,6 +548,23 @@ fun AppNavigation(
                                 reportId
                         )
                 }
+            }
+
+            LaunchedEffect(
+                lostReportDetailViewModel
+                    .report
+                    ?.id
+            ) {
+
+                val report =
+                    lostReportDetailViewModel
+                        .report
+                        ?: return@LaunchedEffect
+
+                smartMatchingViewModel
+                    .generateMatches(
+                        report
+                    )
             }
 
             LaunchedEffect(

@@ -11,4 +11,8 @@ data class LostReport(
     val reportedAt: Timestamp? = null,
     val imageUrl: String = "",
     val statusChangedAt: Timestamp? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val category: String = "",
+    val description: String = ""
 )
