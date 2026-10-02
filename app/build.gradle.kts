@@ -25,7 +25,6 @@ android {
     }
     buildTypes {
         debug {
-            // JaCoCo coverage for unit tests: ./gradlew createDebugUnitTestCoverageReport
             enableUnitTestCoverage = true
         }
     }
@@ -53,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
+    implementation("androidx.biometric:biometric:1.1.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -182,13 +182,7 @@ fun LoginScreen(
         }
     }
 
-    /*
-     * Student authentication dialog.
-     *
-     * It appears only after pressing
-     * "Enter with Uniandes", keeping the
-     * original Figma screen unchanged.
-     */
+
     if (showLoginDialog) {
 
         AlertDialog(
