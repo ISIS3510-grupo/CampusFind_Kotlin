@@ -18,6 +18,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
+import com.CampusFind.com.ui.screens.AdminReportBottleneckScreen
+import com.CampusFind.com.ui.screens.BiometricVerificationScreen
+import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
+import com.CampusFind.com.ui.screens.HomeScreen
+
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
@@ -54,6 +59,13 @@ object Routes {
 
     const val MATCH_ALERT = "match_alert"
     const val REPORT_FOUND = "report_found"
+    const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
+
+    const val HOME = "home"
+
+    const val BIOMETRIC_VERIFY = "biometric_verify"
+
+    const val DROP_OFF = "drop_off"
 
     fun lostReportDetail(
         reportId: String
@@ -189,8 +201,15 @@ fun AppNavigation(
                         .startObserving()
 
                     navController.navigate(
-                        Routes.PROFILE
-                    )
+                        Routes.HOME
+                    ) {
+
+                        popUpTo(
+                            Routes.LOGIN
+                        ) {
+                            inclusive = true
+                        }
+                    }
                 },
 
                 onStaffLogin = {
@@ -207,6 +226,48 @@ fun AppNavigation(
                 }
             )
         }
+
+        composable(
+            Routes.HOME
+        ) {
+
+            val authenticationViewModel:
+                    AuthenticationViewModel =
+                viewModel()
+
+            HomeScreen(
+
+                onProfile = {
+                    navController.navigate(
+                        Routes.PROFILE
+                    )
+                },
+
+                onReportFound = {
+                    navController.navigate(
+                        Routes.REPORT_FOUND
+                    )
+                },
+
+                onLogout = {
+
+                    authenticationViewModel
+                        .logout()
+
+                    navController.navigate(
+                        Routes.LOGIN
+                    ) {
+
+                        popUpTo(
+                            Routes.HOME
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
 
         composable(
             Routes.ADMIN_HOME
@@ -245,6 +306,13 @@ fun AppNavigation(
                 onOwnershipRates = {
                     navController.navigate(Routes.ADMIN_OWNERSHIP)
                 },
+
+                onReportBottleneck = {
+                    navController.navigate(
+                        Routes.ADMIN_REPORT_BOTTLENECK
+                    )
+                },
+
                 onLogout = {
 
                     authenticationViewModel
@@ -281,7 +349,22 @@ fun AppNavigation(
             )
         }
 
-        composable(Routes.ADMIN_REPORT_TIMES) {
+        composable(
+            Routes.ADMIN_REPORT_BOTTLENECK
+        ) {
+
+            AdminReportBottleneckScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+
+        composable(
+            Routes.ADMIN_REPORT_TIMES
+        ) {
+
             AdminReportTimesScreen(
                 onBack = {
                     navController
@@ -524,11 +607,24 @@ fun AppNavigation(
                 },
 
                 onReviewMatch = {
-                    // Después conectaremos
-                    // el detalle real del found item.
+                    navController.navigate(
+                        Routes.BIOMETRIC_VERIFY
+                    )
                 },
 
                 onNotMine = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+
+        composable(
+            Routes.BIOMETRIC_VERIFY
+        ) {
+
+            BiometricVerificationScreen(
+                onBack = {
                     navController
                         .popBackStack()
                 }
@@ -546,8 +642,9 @@ fun AppNavigation(
                 },
 
                 onContinue = {
-                    // Posteriormente irá
-                    // al flujo de drop-off.
+                    navController.navigate(
+                        Routes.DROP_OFF
+                    )
                 },
 
                 onCancel = {
@@ -590,5 +687,23 @@ fun AppNavigation(
                 }
             )
         }
+
+        composable(
+            Routes.DROP_OFF
+        ) {
+
+            DropOffInstructionsScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
+
+                onDone = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+
     }
 }
