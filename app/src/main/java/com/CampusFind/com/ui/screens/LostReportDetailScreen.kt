@@ -12,11 +12,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.CampusFind.com.model.LostReport
+import java.text.SimpleDateFormat
+import java.util.Locale
+import com.CampusFind.com.viewmodel.FoundItemDetail
 import com.CampusFind.com.ui.components.*
 
 @Composable
 fun LostReportDetailScreen(
-    matchCount: Int = 1,
+    matchCount: Int = 0,
+    report: LostReport? = null,
+    foundItem: FoundItemDetail? = null,
     onBack: () -> Unit = {},
     onMatchClick: () -> Unit = {},
     onRecoveredElsewhere: () -> Unit = {}
@@ -36,9 +42,10 @@ fun LostReportDetailScreen(
                 .padding(padding)
                 .padding(24.dp)
         ) {
+
             ScreenTitle(
                 title = "Lost report",
-                subtitle = "Scientific calculator",
+                subtitle = report?.title ?: "",
                 onBack = onBack
             )
 
@@ -46,16 +53,14 @@ fun LostReportDetailScreen(
                 modifier = Modifier.height(16.dp)
             )
 
-            if (matchCount > 0) {
-                YellowBadge(
-                    text =
-                        if (matchCount == 1) {
-                            "Possible match"
-                        } else {
-                            "$matchCount possible matches"
-                        }
-                )
-            }
+            YellowBadge(
+                text =
+                    if (matchCount == 1) {
+                        "1 possible match"
+                    } else {
+                        "$matchCount possible matches"
+                    }
+            )
 
             Spacer(
                 modifier = Modifier.height(18.dp)
@@ -71,6 +76,7 @@ fun LostReportDetailScreen(
                     )
                     .padding(18.dp)
             ) {
+
                 Text(
                     text = "Report details",
                     fontSize = 16.sp,
@@ -82,7 +88,7 @@ fun LostReportDetailScreen(
                 )
 
                 Text(
-                    text = "Lost at Mario Laserna Building",
+                    text = "Lost at ${report?.locationName ?: ""}",
                     fontSize = 16.sp
                 )
 
@@ -91,7 +97,15 @@ fun LostReportDetailScreen(
                 )
 
                 Text(
-                    text = "Sep 9 · 2:30 PM",
+                    text = report?.reportedAt
+                        ?.toDate()
+                        ?.let { date ->
+                            SimpleDateFormat(
+                                "MMM d · h:mm a",
+                                Locale.ENGLISH
+                            ).format(date)
+                        }
+                        ?: "",
                     fontSize = 13.sp,
                     color = CampusGray
                 )
@@ -101,7 +115,17 @@ fun LostReportDetailScreen(
                 )
 
                 Text(
-                    text = "Status updated 20 minutes ago",
+                    text = report?.statusChangedAt
+                        ?.toDate()
+                        ?.let { date ->
+                            "Status updated ${
+                                SimpleDateFormat(
+                                    "MMM d · h:mm a",
+                                    Locale.ENGLISH
+                                ).format(date)
+                            }"
+                        }
+                        ?: "Status: ${report?.status ?: ""}",
                     fontSize = 13.sp,
                     color = CampusGray
                 )
@@ -111,72 +135,82 @@ fun LostReportDetailScreen(
                 modifier = Modifier.height(30.dp)
             )
 
-            Text(
-                text = "Possible match",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium
-            )
+            if (matchCount > 0) {
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(116.dp)
-                    .border(
-                        width = 1.dp,
-                        color = CampusBorder,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .clickable {
-                        onMatchClick()
-                    }
-                    .padding(10.dp)
-            ) {
-                ImagePlaceholder(
-                    modifier = Modifier
-                        .width(92.dp)
-                        .fillMaxHeight()
+                Text(
+                    text =
+                        if (matchCount == 1) {
+                            "Possible match"
+                        } else {
+                            "Possible matches"
+                        },
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
                 )
 
                 Spacer(
-                    modifier = Modifier.width(16.dp)
+                    modifier = Modifier.height(16.dp)
                 )
 
-                Column {
-                    Text(
-                        text = "Scientific calculator",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(116.dp)
+                        .border(
+                            width = 1.dp,
+                            color = CampusBorder,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .clickable {
+                            onMatchClick()
+                        }
+                        .padding(10.dp)
+                ) {
+
+                    ImagePlaceholder(
+                        modifier = Modifier
+                            .width(92.dp)
+                            .fillMaxHeight()
                     )
 
                     Spacer(
-                        modifier = Modifier.height(8.dp)
+                        modifier = Modifier.width(16.dp)
                     )
 
-                    Text(
-                        text = "Found in ML · Today",
-                        fontSize = 13.sp,
-                        color = CampusGray
-                    )
+                    Column {
 
-                    Spacer(
-                        modifier = Modifier.height(20.dp)
-                    )
+                        Text(
+                            text = foundItem?.title ?: "",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
 
-                    Text(
-                        text = "View details →",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        Text(
+                            text = "Found in ${foundItem?.locationName ?: ""}",
+                            fontSize = 13.sp,
+                            color = CampusGray
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        Text(
+                            text = "View details →",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
-            }
 
-            Spacer(
-                modifier = Modifier.height(28.dp)
-            )
+                Spacer(
+                    modifier = Modifier.height(28.dp)
+                )
+            }
 
             Text(
                 text = "The report remains active until staff marks the item as delivered.",

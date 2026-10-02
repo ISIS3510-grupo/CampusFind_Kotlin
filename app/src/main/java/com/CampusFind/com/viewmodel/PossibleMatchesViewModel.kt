@@ -10,43 +10,61 @@ import com.google.firebase.firestore.ListenerRegistration
 
 class PossibleMatchesViewModel : ViewModel() {
 
-    private val dataSource = PossibleMatchesDataSource()
+    private val dataSource =
+        PossibleMatchesDataSource()
 
-    var matches by mutableStateOf<List<PossibleMatch>>(emptyList())
+    var matches by
+    mutableStateOf<List<PossibleMatch>>(
+        emptyList()
+    )
         private set
 
-    var isLoading by mutableStateOf(false)
+    var isLoading by
+    mutableStateOf(false)
         private set
 
-    var errorMessage by mutableStateOf<String?>(null)
+    var errorMessage by
+    mutableStateOf<String?>(null)
         private set
 
     val matchCount: Int
         get() = matches.size
 
-    private var listener: ListenerRegistration? = null
+    private var listener:
+            ListenerRegistration? = null
 
-    fun observeMatches(lostReportId: String) {
+    fun observeMatches(
+        reportId: String
+    ) {
+
         listener?.remove()
 
         isLoading = true
         errorMessage = null
 
-        listener = dataSource.observePossibleMatches(
-            lostReportId = lostReportId,
-            onUpdate = { result ->
-                matches = result
-                isLoading = false
-            },
-            onError = { error ->
-                errorMessage = error
-                isLoading = false
-            }
-        )
+        listener =
+            dataSource.observePossibleMatches(
+
+                reportId = reportId,
+
+                onUpdate = { result ->
+
+                    matches = result
+                    isLoading = false
+                },
+
+                onError = { error ->
+
+                    errorMessage = error
+                    isLoading = false
+                }
+            )
     }
 
     override fun onCleared() {
+
         listener?.remove()
+
         super.onCleared()
     }
 }

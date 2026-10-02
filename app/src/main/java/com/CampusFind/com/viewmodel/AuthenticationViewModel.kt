@@ -108,4 +108,7 @@ class AuthenticationViewModel : ViewModel() {
         authenticationService.signOut()
         isAuthenticated = false
     }
+    fun getCurrentUserUid(): String {
+        return authenticationService.getCurrentUserUid()
+    }
 }
