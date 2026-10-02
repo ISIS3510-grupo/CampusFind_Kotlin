@@ -19,7 +19,8 @@ class PendingFoundItemStore(private val context: Context, userId: String) {
         category: String,
         publicDescription: String,
         locationName: String,
-        photoUri: Uri?
+        photoUri: Uri?,
+        privateCharacteristics: String
     ) {
         var photoPath = ""
         if (photoUri != null) {
@@ -44,6 +45,7 @@ class PendingFoundItemStore(private val context: Context, userId: String) {
             .put("publicDescription", publicDescription)
             .put("locationName", locationName)
             .put("photoPath", photoPath)
+            .put("privateCharacteristics", privateCharacteristics)
 
         if (!preferences.edit().putString(id, item.toString()).commit()) {
             if (photoPath.isNotEmpty()) File(photoPath).delete()

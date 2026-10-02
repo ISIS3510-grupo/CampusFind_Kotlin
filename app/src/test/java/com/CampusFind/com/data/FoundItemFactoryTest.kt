@@ -7,6 +7,20 @@ import org.junit.Test
 class FoundItemFactoryTest {
 
     @Test
+    fun createsOnlyPrivateCharacteristics() {
+        val item = FoundItemFactory.createPrivate("Serial ABC123 / unique mark")
+
+        assertEquals(mapOf("privateCharacteristics" to "Serial ABC123 / unique mark"), item)
+    }
+
+    @Test
+    fun publicItemDoesNotIncludePrivateCharacteristics() {
+        val item = FoundItemFactory.create("Charger", "electronics", "Black charger", "Library", "user1", null)
+
+        assertFalse(item.containsKey("privateCharacteristics"))
+    }
+
+    @Test
     fun preservesFieldsAndSetsDefaults() {
         val item = FoundItemFactory.create("Charger", "electronics", "Black charger", "Library", "user1", null)
 

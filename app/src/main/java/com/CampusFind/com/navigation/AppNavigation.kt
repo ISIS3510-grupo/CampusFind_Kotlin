@@ -25,6 +25,7 @@ import com.CampusFind.com.ui.screens.HomeScreen
 
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
+import com.CampusFind.com.ui.screens.AdminOwnershipScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
 import com.CampusFind.com.ui.screens.LoginScreen
 import com.CampusFind.com.ui.screens.LostReportDetailScreen
@@ -40,15 +41,18 @@ import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
 import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
+import com.CampusFind.com.ui.screens.DonationPotentialScreen
+import com.CampusFind.com.viewmodel.DonationPotentialViewModel
 
 object Routes {
-
+    const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
     const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
     const val REPORT_LOST = "report_lost"
+    const val DONATION_POTENTIAL = "donation_potential"
 
     const val LOST_REPORT_DETAIL =
         "lost_report_detail/{reportId}"
@@ -290,10 +294,17 @@ fun AppNavigation(
                     )
                 },
 
-                onReviewClaims = {
+                onDonationPotential = {
                     navController.navigate(
-                        Routes.ADMIN_CLAIMS
+                        Routes.DONATION_POTENTIAL
                     )
+                },
+
+                onReviewClaims = {
+                    navController.navigate(Routes.ADMIN_CLAIMS)
+                },
+                onOwnershipRates = {
+                    navController.navigate(Routes.ADMIN_OWNERSHIP)
                 },
 
                 onReportBottleneck = {
@@ -318,16 +329,22 @@ fun AppNavigation(
                     }
                 }
             )
+
+
         }
 
-        composable(
-            Routes.ADMIN_CLAIMS
-        ) {
+        composable(Routes.ADMIN_OWNERSHIP) {
+            AdminOwnershipScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
 
+        composable(Routes.ADMIN_CLAIMS) {
             AdminClaimsScreen(
                 onBack = {
-                    navController
-                        .popBackStack()
+                    navController.popBackStack()
                 }
             )
         }
@@ -631,6 +648,40 @@ fun AppNavigation(
                 },
 
                 onCancel = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+        composable(Routes.DONATION_POTENTIAL) {
+
+            val donationPotentialViewModel:
+                    DonationPotentialViewModel =
+                viewModel()
+
+            LaunchedEffect(Unit) {
+                donationPotentialViewModel
+                    .loadDonationPotential()
+            }
+
+            DonationPotentialScreen(
+                semesterId =
+                    donationPotentialViewModel
+                        .semesterId,
+
+                results =
+                    donationPotentialViewModel
+                        .results,
+
+                isLoading =
+                    donationPotentialViewModel
+                        .isLoading,
+
+                errorMessage =
+                    donationPotentialViewModel
+                        .errorMessage,
+
+                onBack = {
                     navController
                         .popBackStack()
                 }

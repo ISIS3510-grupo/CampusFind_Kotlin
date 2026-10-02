@@ -1,16 +1,26 @@
 package com.CampusFind.com.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.CampusFind.com.data.ClaimsRepository
 import com.CampusFind.com.model.ClaimReview
+import com.CampusFind.com.ui.components.CampusBorder
+import com.CampusFind.com.ui.components.CampusGray
+import com.CampusFind.com.ui.components.ScreenTitle
+import com.CampusFind.com.ui.components.YellowBadge
 import java.util.Locale
 
 @Composable
@@ -36,37 +46,57 @@ fun AdminClaimsScreen(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 24.dp, vertical = 22.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Review claims",
-            style = MaterialTheme.typography.headlineSmall
+        ScreenTitle(
+            title = "Review claims",
+            subtitle = "Compare the student's answer with the registered details",
+            onBack = onBack
         )
 
         if (isLoading) {
-            Text(text = "Loading...")
+            Text(text = "Loading...", color = CampusGray)
         } else if (errorMessage != null) {
             Text(text = errorMessage ?: "", color = MaterialTheme.colorScheme.error)
         } else if (claims.isEmpty()) {
-            Text(text = "No pending claims")
+            Text(text = "No pending claims", color = CampusGray)
         } else {
             for (claim in claims) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = "Report: ${claim.reportId}")
-                        Text(text = "Student answer: ${claim.answer}")
-                        Text(text = "Registered: ${claim.registered}")
-                        Text(text = String.format(Locale.US, "Score: %.0f%%", claim.score * 100))
-                        Text(text = claim.verdict.name)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = CampusBorder,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Report: ${claim.reportId}",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        YellowBadge(
+                            text = String.format(Locale.US, "%.0f%%", claim.score * 100)
+                        )
                     }
+                    Text(text = "Student answer", color = CampusGray, fontSize = 13.sp)
+                    Text(text = claim.answer)
+                    Text(text = "Registered details", color = CampusGray, fontSize = 13.sp)
+                    Text(text = claim.registered)
+                    Text(text = claim.verdict.name, fontWeight = FontWeight.Bold)
                 }
             }
-        }
-
-        Button(onClick = onBack) {
-            Text(text = "Back")
         }
     }
 }
