@@ -16,24 +16,35 @@ fun AdminHomeScreen(
     email: String,
     onRegisterFound: () -> Unit,
     onReportTimes: () -> Unit,
+    onDonationPotential: () -> Unit,
     onReviewClaims: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = email)
+
         Button(onClick = onRegisterFound) {
             Text(text = "Register found item")
         }
+
         Button(onClick = onReportTimes) {
             Text(text = "Average time to found")
         }
+
+        Button(onClick = onDonationPotential) {
+            Text(text = "Donation potential")
+        }
+
         Button(onClick = onReviewClaims) {
             Text(text = "Review claims")
         }
+
         Button(onClick = onLogout) {
             Text(text = "Sign out")
         }
