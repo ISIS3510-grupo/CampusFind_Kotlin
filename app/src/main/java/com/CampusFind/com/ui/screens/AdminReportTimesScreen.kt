@@ -1,16 +1,25 @@
 package com.CampusFind.com.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.CampusFind.com.data.ReportTimesRepository
 import com.CampusFind.com.service.CategoryReportTime
+import com.CampusFind.com.ui.components.CampusBorder
+import com.CampusFind.com.ui.components.CampusGray
+import com.CampusFind.com.ui.components.ScreenTitle
+import com.CampusFind.com.ui.components.YellowBadge
 import java.util.Locale
 
 @Composable
@@ -36,36 +45,49 @@ fun AdminReportTimesScreen(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 24.dp, vertical = 22.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Average time to found",
-            style = MaterialTheme.typography.headlineSmall
+        ScreenTitle(
+            title = "Average time to found",
+            subtitle = "Time from reported to found, by category",
+            onBack = onBack
         )
 
         if (isLoading) {
-            Text(text = "Loading...")
+            Text(text = "Loading...", color = CampusGray)
         } else if (errorMessage != null) {
             Text(text = errorMessage ?: "", color = MaterialTheme.colorScheme.error)
         } else if (reportTimes.isEmpty()) {
-            Text(text = "No data yet")
+            Text(text = "No data yet", color = CampusGray)
         } else {
             for (reportTime in reportTimes) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = CampusBorder,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = reportTime.category, modifier = Modifier.weight(1f))
-                    Text(text = "${reportTime.count} reports")
-                    Text(text = String.format(Locale.US, "%.2f days", reportTime.averageDays))
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(text = reportTime.category, fontWeight = FontWeight.Bold)
+                        Text(text = "${reportTime.count} reports", color = CampusGray)
+                    }
+                    YellowBadge(
+                        text = String.format(Locale.US, "%.2f days", reportTime.averageDays)
+                    )
                 }
             }
-        }
-
-        Button(onClick = onBack) {
-            Text(text = "Back")
         }
     }
 }

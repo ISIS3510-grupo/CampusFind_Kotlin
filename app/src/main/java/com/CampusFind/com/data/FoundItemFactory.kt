@@ -2,6 +2,10 @@ package com.CampusFind.com.data
 
 object FoundItemFactory {
 
+    fun createPrivate(privateCharacteristics: String): Map<String, Any> {
+        return mapOf("privateCharacteristics" to privateCharacteristics)
+    }
+
     fun create(
         title: String,
         category: String,
