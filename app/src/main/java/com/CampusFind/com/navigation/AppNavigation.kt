@@ -36,6 +36,8 @@ import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
 import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
+import com.CampusFind.com.ui.screens.DonationPotentialScreen
+import com.CampusFind.com.viewmodel.DonationPotentialViewModel
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -45,6 +47,7 @@ object Routes {
     const val LOGIN = "login"
     const val PROFILE = "profile"
     const val REPORT_LOST = "report_lost"
+    const val DONATION_POTENTIAL = "donation_potential"
 
     const val LOST_REPORT_DETAIL =
         "lost_report_detail/{reportId}"
@@ -229,6 +232,13 @@ fun AppNavigation(
                         Routes.ADMIN_REPORT_TIMES
                     )
                 },
+
+                onDonationPotential = {
+                    navController.navigate(
+                        Routes.DONATION_POTENTIAL
+                    )
+                },
+
                 onReviewClaims = {
                     navController.navigate(Routes.ADMIN_CLAIMS)
                 },
@@ -251,6 +261,8 @@ fun AppNavigation(
                     }
                 }
             )
+
+
         }
 
         composable(Routes.ADMIN_OWNERSHIP) {
@@ -539,6 +551,40 @@ fun AppNavigation(
                 },
 
                 onCancel = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+        composable(Routes.DONATION_POTENTIAL) {
+
+            val donationPotentialViewModel:
+                    DonationPotentialViewModel =
+                viewModel()
+
+            LaunchedEffect(Unit) {
+                donationPotentialViewModel
+                    .loadDonationPotential()
+            }
+
+            DonationPotentialScreen(
+                semesterId =
+                    donationPotentialViewModel
+                        .semesterId,
+
+                results =
+                    donationPotentialViewModel
+                        .results,
+
+                isLoading =
+                    donationPotentialViewModel
+                        .isLoading,
+
+                errorMessage =
+                    donationPotentialViewModel
+                        .errorMessage,
+
+                onBack = {
                     navController
                         .popBackStack()
                 }
