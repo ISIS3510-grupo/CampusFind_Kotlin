@@ -38,6 +38,7 @@ class FoundItemRepository private constructor(private val context: Context) {
         publicDescription: String,
         locationName: String,
         photoUri: Uri?,
+        privateCharacteristics: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -48,7 +49,7 @@ class FoundItemRepository private constructor(private val context: Context) {
         }
         try {
             PendingFoundItemStore(context, user.uid).save(
-                id, title, category, publicDescription, locationName, photoUri
+                id, title, category, publicDescription, locationName, photoUri, privateCharacteristics
             )
         } catch (exception: Exception) {
             onError(exception.localizedMessage ?: "Unable to save item offline.")
@@ -87,6 +88,7 @@ class FoundItemRepository private constructor(private val context: Context) {
             publicDescription = item.getString("publicDescription"),
             locationName = item.getString("locationName"),
             photoUri = if (photoPath.isEmpty()) null else Uri.fromFile(File(photoPath)),
+            privateCharacteristics = item.optString("privateCharacteristics", ""),
             onSuccess = {
                 try {
                     store.delete(item.getString("id"))
@@ -109,6 +111,7 @@ class FoundItemRepository private constructor(private val context: Context) {
         publicDescription: String,
         locationName: String,
         photoUri: Uri?,
+        privateCharacteristics: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -135,14 +138,14 @@ class FoundItemRepository private constructor(private val context: Context) {
         )
 
         if (photoUri == null) {
-            saveDocument(id, item, onSuccess, onError)
+            saveDocument(id, item, privateCharacteristics, onSuccess, onError)
             return
         }
 
         storage.reference.child(photoPath!!)
             .putFile(photoUri)
             .addOnSuccessListener {
-                saveDocument(id, item, onSuccess, onError)
+                saveDocument(id, item, privateCharacteristics, onSuccess, onError)
             }
             .addOnFailureListener { exception ->
                 isSaving = false
@@ -153,14 +156,21 @@ class FoundItemRepository private constructor(private val context: Context) {
     private fun saveDocument(
         id: String,
         item: Map<String, Any>,
+        privateCharacteristics: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         val document = item.toMutableMap()
         document["createdAt"] = FieldValue.serverTimestamp()
-        firestore.collection("foundItems")
-            .document(id)
-            .set(document)
+        val batch = firestore.batch()
+        batch.set(firestore.collection("foundItems").document(id), document)
+        if (privateCharacteristics.isNotBlank()) {
+            batch.set(
+                firestore.collection("foundItemPrivate").document(id),
+                FoundItemFactory.createPrivate(privateCharacteristics)
+            )
+        }
+        batch.commit()
             .addOnSuccessListener {
                 val wasSendingPending = isSendingPending
                 isSaving = false

@@ -20,6 +20,7 @@ import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
+import com.CampusFind.com.ui.screens.AdminOwnershipScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
 import com.CampusFind.com.ui.screens.LoginScreen
 import com.CampusFind.com.ui.screens.LostReportDetailScreen
@@ -39,7 +40,7 @@ import com.CampusFind.com.ui.screens.DonationPotentialScreen
 import com.CampusFind.com.viewmodel.DonationPotentialViewModel
 
 object Routes {
-
+    const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
     const val ADMIN_HOME = "admin_home"
@@ -239,11 +240,11 @@ fun AppNavigation(
                 },
 
                 onReviewClaims = {
-                    navController.navigate(
-                        Routes.ADMIN_CLAIMS
-                    )
+                    navController.navigate(Routes.ADMIN_CLAIMS)
                 },
-
+                onOwnershipRates = {
+                    navController.navigate(Routes.ADMIN_OWNERSHIP)
+                },
                 onLogout = {
 
                     authenticationViewModel
@@ -264,22 +265,23 @@ fun AppNavigation(
 
         }
 
-        composable(
-            Routes.ADMIN_CLAIMS
-        ) {
-
-            AdminClaimsScreen(
+        composable(Routes.ADMIN_OWNERSHIP) {
+            AdminOwnershipScreen(
                 onBack = {
-                    navController
-                        .popBackStack()
+                    navController.popBackStack()
                 }
             )
         }
 
-        composable(
-            Routes.ADMIN_REPORT_TIMES
-        ) {
+        composable(Routes.ADMIN_CLAIMS) {
+            AdminClaimsScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
 
+        composable(Routes.ADMIN_REPORT_TIMES) {
             AdminReportTimesScreen(
                 onBack = {
                     navController
