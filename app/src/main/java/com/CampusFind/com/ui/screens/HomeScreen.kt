@@ -106,9 +106,7 @@ fun HomeScreen(
                 .background(Color.White)
         ) {
 
-            /*
-             * HEADER
-             */
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,9 +154,7 @@ fun HomeScreen(
                 }
             }
 
-            /*
-             * STUDENT ACTIONS
-             */
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,11 +171,9 @@ fun HomeScreen(
                     modifier = Modifier.height(18.dp)
                 )
 
-                /*
-                 * SEARCH FOUND ITEMS
-                 *
-                 * We will connect this later.
-                 */
+
+
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -190,7 +184,6 @@ fun HomeScreen(
                             shape = RoundedCornerShape(10.dp)
                         )
                         .clickable {
-                            // Search Found Items will be connected later.
                         }
                         .padding(24.dp),
                     verticalAlignment = Alignment.Top
@@ -230,9 +223,7 @@ fun HomeScreen(
                     modifier = Modifier.height(16.dp)
                 )
 
-                /*
-                 * REPORT FOUND ITEM
-                 */
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -281,12 +272,7 @@ fun HomeScreen(
                     modifier = Modifier.height(36.dp)
                 )
 
-                /*
-                 * ACTIVE REPORT PLACEHOLDER
-                 *
-                 * Later Smart Matching will load the real
-                 * active report from Firestore.
-                 */
+
                 Text(
                     text = "My active report",
                     fontSize = 16.sp,

@@ -38,10 +38,7 @@ class AuthenticationService {
     ) {
         val normalizedEmail = email.trim().lowercase()
 
-        /*
-         * Reuse the Uniandes email validation
-         * implemented by Alex.
-         */
+
         if (!UniandesEmailValidator.isValid(normalizedEmail)) {
             onError("Use a valid @uniandes.edu.co email.")
             return
@@ -120,11 +117,7 @@ class AuthenticationService {
                         val role =
                             document.getString("role")
 
-                        /*
-                         * Student Authentication must only
-                         * allow accounts whose Firestore
-                         * role is exactly "student".
-                         */
+
                         if (!UserRoleValidator.isValid(role, expectedRole)) {
                             validatedRole = null
                             firebaseAuth.signOut()

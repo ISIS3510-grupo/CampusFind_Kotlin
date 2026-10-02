@@ -25,7 +25,6 @@ android {
     }
     buildTypes {
         debug {
-            // JaCoCo coverage for unit tests: ./gradlew createDebugUnitTestCoverageReport
             enableUnitTestCoverage = true
         }
     }
