@@ -33,6 +33,7 @@ fun AdminHomeScreen(
     onDonationPotential: () -> Unit,
     onReviewClaims: () -> Unit,
     onOwnershipRates: () -> Unit,
+    onReportBottleneck: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -105,6 +106,11 @@ fun AdminHomeScreen(
                 SecondaryButton(
                     text = "Verification rate",
                     onClick = onOwnershipRates
+                )
+
+                SecondaryButton(
+                    text = "Report bottleneck",
+                    onClick = onReportBottleneck
                 )
             }
 
