@@ -1,390 +1,731 @@
-package com.CampusFind.com.ui.screens
+package com.CampusFind.com.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.CampusFind.com.ui.components.CampusBorder
-import com.CampusFind.com.ui.components.CampusGray
-import com.CampusFind.com.ui.components.CampusYellow
-import com.CampusFind.com.ui.components.PrimaryButton
-import com.CampusFind.com.ui.components.SecondaryButton
-import com.CampusFind.com.ui.theme.AnaheimFontFamily
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.CampusFind.com.service.MatchNotificationService
+import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
+import com.CampusFind.com.ui.screens.AdminReportBottleneckScreen
+import com.CampusFind.com.ui.screens.BiometricVerificationScreen
+import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
+import com.CampusFind.com.ui.screens.HomeScreen
+
+import com.CampusFind.com.ui.screens.AdminClaimsScreen
+import com.CampusFind.com.ui.screens.AdminHomeScreen
+import com.CampusFind.com.ui.screens.AdminOwnershipScreen
+import com.CampusFind.com.ui.screens.AdminReportTimesScreen
+import com.CampusFind.com.ui.screens.LoginScreen
+import com.CampusFind.com.ui.screens.LostReportDetailScreen
+import com.CampusFind.com.ui.screens.MatchAlertScreen
+import com.CampusFind.com.ui.screens.ProfileScreen
+import com.CampusFind.com.ui.screens.ReportFoundItemScreen
+import com.CampusFind.com.ui.screens.ReportLostItemScreen
+import com.CampusFind.com.viewmodel.AuthenticationViewModel
+import com.CampusFind.com.viewmodel.LocationViewModel
+import com.CampusFind.com.viewmodel.LostReportsViewModel
+import com.CampusFind.com.viewmodel.NotificationsViewModel
+
+import com.CampusFind.com.viewmodel.ProfileViewModel
+import com.CampusFind.com.viewmodel.LostReportDetailViewModel
+import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
+import com.CampusFind.com.ui.screens.DonationPotentialScreen
+import com.CampusFind.com.viewmodel.DonationPotentialViewModel
+import com.CampusFind.com.viewmodel.SmartMatchingViewModel
+import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
+
+object Routes {
+    const val ADMIN_OWNERSHIP = "admin_ownership"
+    const val ADMIN_CLAIMS = "admin_claims"
+    const val ADMIN_REPORT_TIMES = "admin_report_times"
+    const val ADMIN_HOME = "admin_home"
+    const val LOGIN = "login"
+    const val PROFILE = "profile"
+    const val REPORT_LOST = "report_lost"
+    const val DONATION_POTENTIAL = "donation_potential"
+    const val LOST_REPORT_DETAIL = "lost_report_detail/{reportId}"
+    const val MATCH_ALERT = "match_alert"
+    const val REPORT_FOUND = "report_found"
+    const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
+    const val HOME = "home"
+    const val BIOMETRIC_VERIFY = "biometric_verify"
+    const val DROP_OFF = "drop_off"
+    const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
+
+    fun lostReportDetail(
+        reportId: String
+    ): String {
+        return "lost_report_detail/$reportId"
+    }
+}
 
 @Composable
-fun AdminHomeScreen(
-    email: String,
-    onRegisterFound: () -> Unit,
-    onReportTimes: () -> Unit,
-    onMatchSearchTime: () -> Unit,
-    onDonationPotential: () -> Unit,
-    onReviewClaims: () -> Unit,
-    onOwnershipRates: () -> Unit,
-    onReportBottleneck: () -> Unit,
-    onLogout: () -> Unit
+fun AppNavigation(
+    notificationMatchId: String? = null,
+    onNotificationNavigationHandled: () -> Unit = {}
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+
+    val navController =
+        rememberNavController()
+
+    LaunchedEffect(
+        notificationMatchId
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(CampusYellow)
-                .statusBarsPadding()
-                .padding(
-                    start = 20.dp,
-                    end = 12.dp,
-                    top = 10.dp,
-                    bottom = 10.dp
-                ),
-            verticalAlignment = Alignment.Top
+
+        if (
+            !notificationMatchId.isNullOrBlank()
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+
+            navController.navigate(
+                Routes.MATCH_ALERT
             ) {
-                Text(
-                    text = "uniandes",
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = AnaheimFontFamily,
-                    color = Color.Black
-                )
-
-                Text(
-                    text = "Admin dashboard",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = AnaheimFontFamily,
-                    color = Color.Black
-                )
-
-                Text(
-                    text = "Lost Items Service",
-                    fontSize = 13.sp,
-                    color = Color.Black,
-                    fontFamily = AnaheimFontFamily
-                )
+                launchSingleTop = true
             }
 
-            IconButton(
-                onClick = onLogout
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Sign out",
-                    tint = Color.Black,
-                    modifier = Modifier.size(28.dp)
-                )
+            onNotificationNavigationHandled()
+        }
+    }
+
+    val context =
+        LocalContext.current
+
+    val notificationsViewModel:
+            NotificationsViewModel =
+        viewModel()
+
+    val matchNotificationService =
+        remember {
+            MatchNotificationService(
+                context
+            )
+        }
+
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract =
+                ActivityResultContracts.RequestPermission()
+        ) { granted ->
+
+            if (granted) {
+                notificationsViewModel
+                    .startObserving()
             }
         }
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(
-                    rememberScrollState()
-                )
-                .padding(
-                    horizontal = 20.dp,
-                    vertical = 18.dp
-                )
+    LaunchedEffect(Unit) {
+
+        if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.TIRAMISU
         ) {
-            Text(
-                text = "Today",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
-            )
 
-            Spacer(
-                modifier = Modifier.height(14.dp)
-            )
+            val permissionGranted =
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(
-                    10.dp
-                )
-            ) {
-                DashboardMetricCard(
-                    value = "0",
-                    label = "New found",
-                    highlighted = true,
-                    modifier = Modifier.weight(1f)
-                )
+            if (permissionGranted) {
 
-                DashboardMetricCard(
-                    value = "0",
-                    label = "Matches",
-                    modifier = Modifier.weight(1f)
-                )
+                notificationsViewModel
+                    .startObserving()
 
-                DashboardMetricCard(
-                    value = "0",
-                    label = "Claims",
-                    modifier = Modifier.weight(1f)
+            } else {
+
+                notificationPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
                 )
             }
 
-            Spacer(
-                modifier = Modifier.height(28.dp)
+        } else {
+
+            notificationsViewModel
+                .startObserving()
+        }
+    }
+
+    LaunchedEffect(
+        notificationsViewModel
+            .latestNotification
+            ?.id
+    ) {
+
+        val notification =
+            notificationsViewModel
+                .latestNotification
+                ?: return@LaunchedEffect
+
+        val wasShown =
+            matchNotificationService
+                .showSmartMatchNotification(
+                    notification
+                )
+
+        if (wasShown) {
+
+            notificationsViewModel
+                .markAsNotified(
+                    notification.id
+                )
+        }
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = Routes.LOGIN
+    ) {
+
+        composable(
+            Routes.LOGIN
+        ) {
+
+            LoginScreen(
+                onStudentLogin = {
+
+                    notificationsViewModel
+                        .startObserving()
+
+                    navController.navigate(
+                        Routes.HOME
+                    ) {
+
+                        popUpTo(
+                            Routes.LOGIN
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                },
+
+                onStaffLogin = {
+
+                    navController.navigate(
+                        Routes.ADMIN_HOME
+                    ) {
+                        popUpTo(
+                            Routes.LOGIN
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.HOME
+        ) {
+
+            val authenticationViewModel:
+                    AuthenticationViewModel =
+                viewModel()
+
+            HomeScreen(
+
+                onProfile = {
+                    navController.navigate(
+                        Routes.PROFILE
+                    )
+                },
+
+                onReportFound = {
+                    navController.navigate(
+                        Routes.REPORT_FOUND
+                    )
+                },
+
+                onLogout = {
+
+                    authenticationViewModel
+                        .logout()
+
+                    navController.navigate(
+                        Routes.LOGIN
+                    ) {
+
+                        popUpTo(
+                            Routes.HOME
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+
+        composable(
+            Routes.ADMIN_HOME
+        ) {
+
+            val authenticationViewModel:
+                    AuthenticationViewModel =
+                viewModel()
+
+            AdminHomeScreen(
+                email =
+                    authenticationViewModel
+                        .getCurrentUserEmail(),
+
+                onRegisterFound = {
+                    navController.navigate(
+                        Routes.REPORT_FOUND
+                    )
+                },
+
+                onReportTimes = {
+                    navController.navigate(
+                        Routes.ADMIN_REPORT_TIMES
+                    )
+                },
+
+                onDonationPotential = {
+                    navController.navigate(
+                        Routes.DONATION_POTENTIAL
+                    )
+                },
+
+                onReviewClaims = {
+                    navController.navigate(Routes.ADMIN_CLAIMS)
+                },
+                onOwnershipRates = {
+                    navController.navigate(Routes.ADMIN_OWNERSHIP)
+                },
+
+                onReportBottleneck = {
+                    navController.navigate(
+                        Routes.ADMIN_REPORT_BOTTLENECK
+                    )
+                },
+                onMatchSearchTime = {
+                    navController.navigate(
+                        Routes.ADMIN_MATCH_SEARCH_TIME
+                    )
+                },
+
+                onLogout = {
+
+                    authenticationViewModel
+                        .logout()
+
+                    navController.navigate(
+                        Routes.LOGIN
+                    ) {
+                        popUpTo(
+                            Routes.ADMIN_HOME
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
 
-            Text(
-                text = "Quick actions",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
-            )
 
-            Spacer(
-                modifier = Modifier.height(14.dp)
-            )
+        }
 
-            PrimaryButton(
-                text = "Register found item",
-                onClick = onRegisterFound
+        composable(Routes.ADMIN_OWNERSHIP) {
+            AdminOwnershipScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
             )
+        }
 
-            Spacer(
-                modifier = Modifier.height(12.dp)
+        composable(Routes.ADMIN_CLAIMS) {
+            AdminClaimsScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
             )
+        }
 
-            SecondaryButton(
-                text = "Search lost & found records",
-                onClick = {}
+        composable(
+            Routes.ADMIN_REPORT_BOTTLENECK
+        ) {
+
+            AdminReportBottleneckScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
             )
+        }
 
-            Spacer(
-                modifier = Modifier.height(28.dp)
+        composable(
+            Routes.ADMIN_REPORT_TIMES
+        ) {
+
+            AdminReportTimesScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
             )
+        }
 
-            Text(
-                text = "Pending claims",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
+        composable(
+            Routes.ADMIN_MATCH_SEARCH_TIME
+        ) {
+
+            AdminMatchSearchTimeScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
             )
+        }
 
-            Spacer(
-                modifier = Modifier.height(14.dp)
-            )
+        composable(
+            Routes.PROFILE
+        ) {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = CampusBorder,
-                        shape = RoundedCornerShape(
-                            10.dp
+            val authenticationViewModel:
+                    AuthenticationViewModel =
+                viewModel()
+
+            val lostReportsViewModel:
+                    LostReportsViewModel =
+                viewModel()
+
+            val profileViewModel:
+                    ProfileViewModel =
+                viewModel()
+
+            val currentUserUid =
+                authenticationViewModel
+                    .getCurrentUserUid()
+
+            LaunchedEffect(
+                currentUserUid
+            ) {
+
+                lostReportsViewModel
+                    .observeReports(
+                        currentUserUid
+                    )
+
+                profileViewModel
+                    .loadUser(
+                        currentUserUid
+                    )
+            }
+
+            val currentUserEmail =
+                authenticationViewModel
+                    .getCurrentUserEmail()
+
+            ProfileScreen(
+                email = currentUserEmail,
+                displayName =
+                    profileViewModel.displayName,
+                role =
+                    profileViewModel.role,
+                reports =
+                    lostReportsViewModel.reports,
+
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
+
+                onReportLost = {
+                    navController.navigate(
+                        Routes.REPORT_LOST
+                    )
+                },
+
+                onOpenReport = { reportId ->
+                    navController.navigate(
+                        Routes.lostReportDetail(
+                            reportId
                         )
                     )
-                    .padding(14.dp)
-            ) {
-                Text(
-                    text = "No pending claims loaded",
-                    fontSize = 15.sp,
-                    color = CampusGray
-                )
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-
-                Box(
-                    modifier = Modifier.width(
-                        110.dp
-                    )
-                ) {
-                    SecondaryButton(
-                        text = "Review",
-                        onClick = onReviewClaims,
-                        height = 40
-                    )
                 }
+            )
+        }
+        composable(
+            Routes.REPORT_LOST
+        ) {
+
+            val locationViewModel:
+                    LocationViewModel =
+                viewModel()
+
+            val requestLocationPermission =
+                rememberLocationPermissionLauncher { status ->
+
+                    locationViewModel
+                        .onPermissionResult(
+                            status
+                        )
+                }
+
+            LaunchedEffect(Unit) {
+                requestLocationPermission()
             }
 
-            Spacer(
-                modifier = Modifier.height(24.dp)
+            val suggestedLocation =
+                locationViewModel
+                    .suggestedCampusLocation
+
+            ReportLostItemScreen(
+                suggestedLocation =
+                    suggestedLocation,
+
+                locationError =
+                    locationViewModel
+                        .errorMessage,
+
+                isLocationLoading =
+                    locationViewModel
+                        .isLoading,
+
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
+
+                onSubmit = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+        composable(
+            route =
+                Routes.LOST_REPORT_DETAIL,
+
+            arguments =
+                listOf(
+                    navArgument(
+                        "reportId"
+                    ) {
+                        type =
+                            NavType.StringType
+                    }
+                )
+        ) { backStackEntry ->
+
+            val reportId =
+                backStackEntry
+                    .arguments
+                    ?.getString(
+                        "reportId"
+                    )
+                    ?: ""
+
+            val foundItemDetailViewModel:
+                    FoundItemDetailViewModel =
+                viewModel()
+
+            val lostReportDetailViewModel:
+                    LostReportDetailViewModel =
+                viewModel()
+
+            val smartMatchingViewModel:
+                    SmartMatchingViewModel =
+                viewModel()
+
+            LaunchedEffect(
+                reportId
+            ) {
+
+                lostReportDetailViewModel
+                    .loadReport(
+                        reportId
+                    )
+            }
+
+            LaunchedEffect(
+                lostReportDetailViewModel
+                    .report
+                    ?.id
+            ) {
+
+                val report =
+                    lostReportDetailViewModel
+                        .report
+                        ?: return@LaunchedEffect
+
+                smartMatchingViewModel
+                    .generateMatches(
+                        report
+                    )
+            }
+
+            LaunchedEffect(
+                smartMatchingViewModel
+                    .matches
+                    .firstOrNull()
+                    ?.foundItem
+                    ?.id
+            ) {
+                val foundItemId =
+                    smartMatchingViewModel
+                        .matches
+                        .firstOrNull()
+                        ?.foundItem
+                        ?.id
+                        ?: return@LaunchedEffect
+
+                foundItemDetailViewModel
+                    .loadFoundItem(
+                        foundItemId
+                    )
+            }
+
+            LostReportDetailScreen(
+                report =
+                    lostReportDetailViewModel
+                        .report,
+
+                foundItem =
+                    foundItemDetailViewModel
+                        .foundItem,
+
+                matchCount =
+                    smartMatchingViewModel
+                        .matches
+                        .size,
+
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
+
+                onMatchClick = {
+                    navController.navigate(
+                        Routes.MATCH_ALERT
+                    )
+                },
+
+                onRecoveredElsewhere = {
+                    navController
+                        .popBackStack()
+                }
             )
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    color = CampusBorder
-                )
-                .background(Color.White)
-                .padding(
-                    vertical = 8.dp
-                ),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+        composable(
+            Routes.MATCH_ALERT
         ) {
-            AdminBottomNavItem(
-                icon = Icons.Default.Home,
-                label = "Dashboard",
-                selected = true,
-                onClick = {}
-            )
 
-            AdminBottomNavItem(
-                icon = Icons.Default.Search,
-                label = "Search",
-                selected = false,
-                onClick = {}
-            )
+            MatchAlertScreen(
+                onBack = {
+                    navController
+                        .navigateUp()
+                },
 
-            AdminBottomNavItem(
-                icon = Icons.Default.Add,
-                label = "Register",
-                selected = false,
-                onClick = onRegisterFound
-            )
+                onReviewMatch = {
+                    navController.navigate(
+                        Routes.BIOMETRIC_VERIFY
+                    )
+                },
 
-            AdminBottomNavItem(
-                icon = Icons.Default.Check,
-                label = "Claims",
-                selected = false,
-                onClick = onReviewClaims
+                onNotMine = {
+                    navController
+                        .popBackStack()
+                }
             )
         }
-    }
-}
 
-@Composable
-private fun DashboardMetricCard(
-    value: String,
-    label: String,
-    highlighted: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .height(84.dp)
-            .background(
-                color =
-                    if (highlighted)
-                        CampusYellow
-                    else
-                        Color.White,
-                shape = RoundedCornerShape(
-                    10.dp
-                )
+        composable(
+            Routes.BIOMETRIC_VERIFY
+        ) {
+
+            BiometricVerificationScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
             )
-            .border(
-                width = 1.dp,
-                color = CampusBorder,
-                shape = RoundedCornerShape(
-                    10.dp
-                )
+        }
+
+        composable(
+            Routes.REPORT_FOUND
+        ) {
+
+            ReportFoundItemScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
+
+                onContinue = {
+                    navController.navigate(
+                        Routes.DROP_OFF
+                    )
+                },
+
+                onCancel = {
+                    navController
+                        .popBackStack()
+                }
             )
-            .padding(
-                horizontal = 10.dp,
-                vertical = 10.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = value,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black
-        )
+        }
+        composable(Routes.DONATION_POTENTIAL) {
 
-        Spacer(
-            modifier = Modifier.height(
-                2.dp
+            val donationPotentialViewModel:
+                    DonationPotentialViewModel =
+                viewModel()
+
+            LaunchedEffect(Unit) {
+                donationPotentialViewModel
+                    .loadDonationPotential()
+            }
+
+            DonationPotentialScreen(
+                semesterId =
+                    donationPotentialViewModel
+                        .semesterId,
+
+                results =
+                    donationPotentialViewModel
+                        .results,
+
+                isLoading =
+                    donationPotentialViewModel
+                        .isLoading,
+
+                errorMessage =
+                    donationPotentialViewModel
+                        .errorMessage,
+
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
             )
-        )
+        }
 
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = CampusGray,
-            textAlign = TextAlign.Center
-        )
-    }
-}
+        composable(
+            Routes.DROP_OFF
+        ) {
 
-@Composable
-private fun AdminBottomNavItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val color =
-        if (selected)
-            Color.Black
-        else
-            CampusGray
+            DropOffInstructionsScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                },
 
-    Column(
-        modifier = Modifier
-            .width(72.dp)
-            .clickable {
-                onClick()
-            },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = color,
-            modifier = Modifier.size(
-                22.dp
+                onDone = {
+                    navController
+                        .popBackStack()
+                }
             )
-        )
+        }
 
-        Spacer(
-            modifier = Modifier.height(
-                3.dp
-            )
-        )
-
-        Text(
-            text = label,
-            fontSize = 10.sp,
-            color = color
-        )
     }
 }

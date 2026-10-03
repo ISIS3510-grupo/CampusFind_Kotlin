@@ -30,6 +30,7 @@ import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
+import androidx.compose.foundation.layout.statusBarsPadding
 import java.util.Locale
 
 @Composable
@@ -78,6 +79,7 @@ fun AdminMatchSearchTimeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .statusBarsPadding()
             .verticalScroll(
                 rememberScrollState()
             )
