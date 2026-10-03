@@ -91,7 +91,6 @@ fun ProfileScreen(
                     fontFamily =
                         AnaheimFontFamily
                 )
-
                 ScreenTitle(
                     title = "Profile",
                     subtitle =
@@ -130,7 +129,6 @@ fun ProfileScreen(
                     verticalAlignment =
                         Alignment.CenterVertically
                 ) {
-
                     Icon(
                         imageVector =
                             Icons.Default.Person,
@@ -147,7 +145,6 @@ fun ProfileScreen(
                                     31.dp
                                 )
                     )
-
                     Spacer(
                         modifier =
                             Modifier.width(
@@ -187,14 +184,12 @@ fun ProfileScreen(
                         )
                     }
                 }
-
                 Spacer(
                     modifier =
                         Modifier.height(
                             28.dp
                         )
                 )
-
                 PrimaryButton(
                     text =
                         "Report a lost item",
@@ -204,14 +199,12 @@ fun ProfileScreen(
 
                     height = 54
                 )
-
                 Spacer(
                     modifier =
                         Modifier.height(
                             34.dp
                         )
                 )
-
                 Text(
                     text =
                         "My lost-item reports",
@@ -264,124 +257,3 @@ fun ProfileScreen(
     }
 }
 
-@Composable
-private fun ReportCard(
-    reportId: String,
-    title: String,
-    subtitle: String,
-    onClick: (String) -> Unit = {}
-) {
-
-    val possibleMatchesViewModel:
-            PossibleMatchesViewModel =
-        viewModel(
-            key = "matches_$reportId"
-        )
-
-    LaunchedEffect(
-        reportId
-    ) {
-        possibleMatchesViewModel
-            .observeMatches(
-                reportId = reportId
-            )
-    }
-
-    val matchCount =
-        possibleMatchesViewModel
-            .matchCount
-
-    val badgeText =
-        if (matchCount == 1) {
-            "1 possible match"
-        } else {
-            "$matchCount possible matches"
-        }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(
-                116.dp
-            )
-            .border(
-                width = 1.dp,
-                color =
-                    CampusBorder,
-                shape =
-                    RoundedCornerShape(
-                        10.dp
-                    )
-            )
-            .clickable {
-
-                onClick(
-                    reportId
-                )
-            }
-            .padding(
-                10.dp
-            )
-    ) {
-
-        ImagePlaceholder(
-            modifier =
-                Modifier
-                    .width(
-                        92.dp
-                    )
-                    .fillMaxHeight()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.width(
-                    16.dp
-                )
-        )
-
-        Column {
-
-            Text(
-                text =
-                    title,
-
-                fontSize =
-                    16.sp,
-
-                fontWeight =
-                    FontWeight.Medium
-            )
-
-            Spacer(
-                modifier =
-                    Modifier.height(
-                        8.dp
-                    )
-            )
-
-            Text(
-                text =
-                    subtitle,
-
-                fontSize =
-                    13.sp,
-
-                color =
-                    CampusGray
-            )
-
-            Spacer(
-                modifier =
-                    Modifier.height(
-                        14.dp
-                    )
-            )
-
-            YellowBadge(
-                text =
-                    badgeText
-            )
-        }
-    }
-}
