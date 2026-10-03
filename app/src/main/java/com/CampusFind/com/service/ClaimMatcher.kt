@@ -2,10 +2,10 @@ package com.CampusFind.com.service
 
 import java.text.Normalizer
 
-enum class ClaimVerdict {
-    LIKELY_MATCH,
-    PARTIAL_MATCH,
-    NO_MATCH
+enum class ClaimVerdict(val displayName: String) {
+    LIKELY_MATCH("Likely match"),
+    PARTIAL_MATCH("Partial match"),
+    NO_MATCH("No match")
 }
 
 data class ClaimMatchResult(

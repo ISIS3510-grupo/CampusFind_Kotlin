@@ -94,7 +94,7 @@ fun AdminClaimsScreen(onBack: () -> Unit) {
                     Text(text = claim.answer)
                     Text(text = "Registered details", color = CampusGray, fontSize = 13.sp)
                     Text(text = claim.registered)
-                    Text(text = claim.verdict.name, fontWeight = FontWeight.Bold)
+                    Text(text = claim.verdict.displayName, fontWeight = FontWeight.Bold)
                 }
             }
         }
