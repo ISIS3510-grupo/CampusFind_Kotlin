@@ -94,6 +94,7 @@ fun ReportFoundItemScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(
                 horizontal = 24.dp,
@@ -202,7 +203,7 @@ fun ReportFoundItemScreen(
                         cameraLauncher.launch(uri)
                     } catch (exception: ActivityNotFoundException) {
                         pendingPhotoUri = null
-                        //photoFile.delete()
+
                         if (!photoFile.delete()) {
                             Log.w(
                                 "ReportFoundItemScreen",
