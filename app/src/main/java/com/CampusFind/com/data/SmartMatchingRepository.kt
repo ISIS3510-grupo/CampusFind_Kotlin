@@ -5,7 +5,6 @@ import com.CampusFind.com.model.LostReport
 import com.CampusFind.com.model.MatchResult
 import com.CampusFind.com.service.BasicMatchingStrategy
 import com.CampusFind.com.service.MatchingService
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class SmartMatchingRepository {
@@ -29,7 +28,6 @@ class SmartMatchingRepository {
             onError(
                 "Lost report information is incomplete."
             )
-
             return
         }
 
@@ -76,41 +74,37 @@ class SmartMatchingRepository {
 
                                 category =
                                     document.getString(
-                                        "category"
-                                    ) ?: "",
+                                        "category") ?: "",
 
                                 title =
                                     document.getString(
-                                        "title"
-                                    ) ?: "",
+                                        "title") ?: "",
 
                                 publicDescription =
                                     document.getString(
-                                        "publicDescription"
-                                    ) ?: "",
+                                        "publicDescription") ?: "",
 
                                 status =
                                     document.getString(
-                                        "status"
-                                    ) ?: "",
+                                        "status") ?: "",
 
                                 locationName =
                                     document.getString(
-                                        "locationName"
-                                    ) ?: "",
+                                        "locationName") ?: "",
 
                                 latitude =
-                                    (document.get("latitude") as? Number)
+                                    (document.get(
+                                        "latitude") as? Number)
                                         ?.toDouble(),
 
                                 longitude =
-                                    (document.get("longitude") as? Number)
+                                    (document.get(
+                                        "longitude") as? Number)
                                         ?.toDouble(),
 
                                 createdAt =
                                     document.getTimestamp(
-                                        "createdAt"
-                                    )
+                                        "createdAt")
                             )
                         }
 
@@ -118,7 +112,6 @@ class SmartMatchingRepository {
                     MatchingService(
                         strategy =
                             BasicMatchingStrategy(),
-
                         threshold =
                             threshold
                     )
@@ -130,124 +123,13 @@ class SmartMatchingRepository {
                             foundItems = foundItems
                         )
 
-                saveMatches(
-                    lostReport = lostReport,
-                    results = results,
-                    onSuccess = onSuccess,
-                    onError = onError
-                )
+                onSuccess(results)
             }
             .addOnFailureListener { exception ->
 
                 onError(
                     exception.localizedMessage
                         ?: "Unable to load found items."
-                )
-            }
-    }
-
-    private fun saveMatches(
-        lostReport: LostReport,
-        results: List<MatchResult>,
-        onSuccess: (List<MatchResult>) -> Unit,
-        onError: (String) -> Unit
-    ) {
-
-        firestore
-            .collection("matches")
-            .whereEqualTo(
-                "reportId",
-                lostReport.id
-            )
-            .whereEqualTo(
-                "ownerUid",
-                lostReport.ownerUid
-            )
-            .get()
-            .addOnSuccessListener { snapshot ->
-
-                if (
-                    snapshot.isEmpty &&
-                    results.isEmpty()
-                ) {
-                    onSuccess(results)
-
-                    return@addOnSuccessListener
-                }
-
-                val batch =
-                    firestore.batch()
-
-                snapshot.documents
-                    .forEach { document ->
-
-                        batch.delete(
-                            document.reference
-                        )
-                    }
-
-                results.forEach { result ->
-
-                    val foundItemId =
-                        result.foundItem.id
-
-                    val matchId =
-                        "${lostReport.id}_$foundItemId"
-
-                    val matchData =
-                        hashMapOf<String, Any>(
-                            "reportId" to
-                                    lostReport.id,
-
-                            "foundItemId" to
-                                    foundItemId,
-
-                            "ownerUid" to
-                                    lostReport.ownerUid,
-
-                            "score" to
-                                    result.score,
-
-                            "strategyName" to
-                                    "basic_matching",
-
-                            "strategyVersion" to
-                                    "1.0",
-
-                            "createdAt" to
-                                    FieldValue.serverTimestamp()
-                        )
-
-                    batch.set(
-                        firestore
-                            .collection("matches")
-                            .document(matchId),
-
-                        matchData
-                    )
-                }
-
-                batch
-                    .commit()
-                    .addOnSuccessListener {
-
-                        onSuccess(
-                            results
-                        )
-                    }
-                    .addOnFailureListener { exception ->
-
-                        onError(
-                            exception.localizedMessage
-                                ?: "Unable to save possible matches."
-                        )
-                    }
-            }
-            .addOnFailureListener { exception ->
-
-                onError(
-                    exception.localizedMessage
-                        ?: "Unable to update possible matches."
                 )
             }
     }

@@ -3,6 +3,7 @@ package com.CampusFind.com.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -26,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.CampusFind.com.ui.components.BottomNavigationBar
 import com.CampusFind.com.ui.components.CampusBorder
@@ -36,6 +39,7 @@ import com.CampusFind.com.ui.components.PrimaryButton
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
+
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import com.CampusFind.com.model.LostReport
 import java.text.SimpleDateFormat
@@ -49,15 +53,18 @@ fun ProfileScreen(
     reports: List<LostReport>,
     onBack: () -> Unit = {},
     onReportLost: () -> Unit = {},
-    onOpenReport: (String) -> Unit = {}
-) {
+    onOpenReport: (String) -> Unit = {},
+    onHome: () -> Unit = {},
+
+    ) {
 
     Scaffold(
         containerColor = Color.White,
 
         bottomBar = {
             BottomNavigationBar(
-                selected = "Profile"
+                selected = "Profile",
+                onHome = onHome
             )
         }
     ) { padding ->
@@ -91,7 +98,6 @@ fun ProfileScreen(
                     fontFamily =
                         AnaheimFontFamily
                 )
-
                 ScreenTitle(
                     title = "Profile",
                     subtitle =
@@ -130,7 +136,6 @@ fun ProfileScreen(
                     verticalAlignment =
                         Alignment.CenterVertically
                 ) {
-
                     Icon(
                         imageVector =
                             Icons.Default.Person,
@@ -147,7 +152,6 @@ fun ProfileScreen(
                                     31.dp
                                 )
                     )
-
                     Spacer(
                         modifier =
                             Modifier.width(
@@ -187,14 +191,12 @@ fun ProfileScreen(
                         )
                     }
                 }
-
                 Spacer(
                     modifier =
                         Modifier.height(
                             28.dp
                         )
                 )
-
                 PrimaryButton(
                     text =
                         "Report a lost item",
@@ -204,14 +206,12 @@ fun ProfileScreen(
 
                     height = 54
                 )
-
                 Spacer(
                     modifier =
                         Modifier.height(
                             34.dp
                         )
                 )
-
                 Text(
                     text =
                         "My lost-item reports",
@@ -272,14 +272,6 @@ private fun ReportCard(
     onClick: (String) -> Unit = {}
 ) {
 
-    /*
-     * Cada reporte observa únicamente los matches
-     * asociados a su propio reportId.
-     *
-     * Esto responde la BQ Type 2:
-     * "How many possible matches are found for a
-     * student's lost-item report?"
-     */
     val possibleMatchesViewModel:
             PossibleMatchesViewModel =
         viewModel(
@@ -340,16 +332,13 @@ private fun ReportCard(
                     )
                     .fillMaxHeight()
         )
-
         Spacer(
             modifier =
                 Modifier.width(
                     16.dp
                 )
         )
-
         Column {
-
             Text(
                 text =
                     title,
@@ -360,14 +349,12 @@ private fun ReportCard(
                 fontWeight =
                     FontWeight.Medium
             )
-
             Spacer(
                 modifier =
                     Modifier.height(
                         8.dp
                     )
             )
-
             Text(
                 text =
                     subtitle,
@@ -378,14 +365,12 @@ private fun ReportCard(
                 color =
                     CampusGray
             )
-
             Spacer(
                 modifier =
                     Modifier.height(
                         14.dp
                     )
             )
-
             YellowBadge(
                 text =
                     badgeText

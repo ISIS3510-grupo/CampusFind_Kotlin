@@ -37,13 +37,14 @@ import com.CampusFind.com.viewmodel.AuthenticationViewModel
 import com.CampusFind.com.viewmodel.LocationViewModel
 import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
-import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
+
 import com.CampusFind.com.viewmodel.ProfileViewModel
 import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
 import com.CampusFind.com.ui.screens.DonationPotentialScreen
 import com.CampusFind.com.viewmodel.DonationPotentialViewModel
 import com.CampusFind.com.viewmodel.SmartMatchingViewModel
+import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -54,19 +55,14 @@ object Routes {
     const val PROFILE = "profile"
     const val REPORT_LOST = "report_lost"
     const val DONATION_POTENTIAL = "donation_potential"
-
-    const val LOST_REPORT_DETAIL =
-        "lost_report_detail/{reportId}"
-
+    const val LOST_REPORT_DETAIL = "lost_report_detail/{reportId}"
     const val MATCH_ALERT = "match_alert"
     const val REPORT_FOUND = "report_found"
     const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
-
     const val HOME = "home"
-
     const val BIOMETRIC_VERIFY = "biometric_verify"
-
     const val DROP_OFF = "drop_off"
+    const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
 
     fun lostReportDetail(
         reportId: String
@@ -313,6 +309,11 @@ fun AppNavigation(
                         Routes.ADMIN_REPORT_BOTTLENECK
                     )
                 },
+                onMatchSearchTime = {
+                    navController.navigate(
+                        Routes.ADMIN_MATCH_SEARCH_TIME
+                    )
+                },
 
                 onLogout = {
 
@@ -375,6 +376,18 @@ fun AppNavigation(
         }
 
         composable(
+            Routes.ADMIN_MATCH_SEARCH_TIME
+        ) {
+
+            AdminMatchSearchTimeScreen(
+                onBack = {
+                    navController
+                        .popBackStack()
+                }
+            )
+        }
+
+        composable(
             Routes.PROFILE
         ) {
 
@@ -425,6 +438,14 @@ fun AppNavigation(
                 onBack = {
                     navController
                         .popBackStack()
+                },
+
+                onHome = {
+                    navController
+                        .popBackStack(
+                            Routes.HOME,
+                            false
+                        )
                 },
 
                 onReportLost = {
@@ -513,10 +534,6 @@ fun AppNavigation(
                     )
                     ?: ""
 
-            val possibleMatchesViewModel:
-                    PossibleMatchesViewModel =
-                viewModel()
-
             val foundItemDetailViewModel:
                     FoundItemDetailViewModel =
                 viewModel()
@@ -537,17 +554,6 @@ fun AppNavigation(
                     .loadReport(
                         reportId
                     )
-
-                if (
-                    reportId.isNotBlank()
-                ) {
-
-                    possibleMatchesViewModel
-                        .observeMatches(
-                            reportId =
-                                reportId
-                        )
-                }
             }
 
             LaunchedEffect(
@@ -568,17 +574,18 @@ fun AppNavigation(
             }
 
             LaunchedEffect(
-                possibleMatchesViewModel
+                smartMatchingViewModel
                     .matches
                     .firstOrNull()
-                    ?.foundItemId
+                    ?.foundItem
+                    ?.id
             ) {
-
                 val foundItemId =
-                    possibleMatchesViewModel
+                    smartMatchingViewModel
                         .matches
                         .firstOrNull()
-                        ?.foundItemId
+                        ?.foundItem
+                        ?.id
                         ?: return@LaunchedEffect
 
                 foundItemDetailViewModel
@@ -597,8 +604,9 @@ fun AppNavigation(
                         .foundItem,
 
                 matchCount =
-                    possibleMatchesViewModel
-                        .matchCount,
+                    smartMatchingViewModel
+                        .matches
+                        .size,
 
                 onBack = {
                     navController
