@@ -7,11 +7,16 @@ import androidx.lifecycle.ViewModel
 import com.CampusFind.com.data.SmartMatchingRepository
 import com.CampusFind.com.model.LostReport
 import com.CampusFind.com.model.MatchResult
+import android.os.SystemClock
+import com.CampusFind.com.data.MatchSearchTimeRepository
 
 class SmartMatchingViewModel : ViewModel() {
 
     private val repository =
         SmartMatchingRepository()
+
+    private val matchSearchTimeRepository =
+        MatchSearchTimeRepository()
 
     var matches by
     mutableStateOf<List<MatchResult>>(
@@ -41,7 +46,11 @@ class SmartMatchingViewModel : ViewModel() {
         isLoading = true
         errorMessage = null
 
+        val startTime =
+            SystemClock.elapsedRealtime()
+
         repository.generateMatches(
+
 
             lostReport = lostReport,
 
