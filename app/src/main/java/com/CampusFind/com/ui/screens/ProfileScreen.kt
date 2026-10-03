@@ -272,14 +272,6 @@ private fun ReportCard(
     onClick: (String) -> Unit = {}
 ) {
 
-    /*
-     * Cada reporte observa únicamente los matches
-     * asociados a su propio reportId.
-     *
-     * Esto responde la BQ Type 2:
-     * "How many possible matches are found for a
-     * student's lost-item report?"
-     */
     val possibleMatchesViewModel:
             PossibleMatchesViewModel =
         viewModel(
