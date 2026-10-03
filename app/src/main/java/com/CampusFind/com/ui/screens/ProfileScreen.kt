@@ -56,7 +56,7 @@ fun ProfileScreen(
     onOpenReport: (String) -> Unit = {},
     onHome: () -> Unit = {},
 
-) {
+    ) {
 
     Scaffold(
         containerColor = Color.White,
