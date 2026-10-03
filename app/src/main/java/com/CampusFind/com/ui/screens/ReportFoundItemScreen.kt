@@ -29,6 +29,7 @@ import androidx.core.content.FileProvider
 import com.CampusFind.com.data.FoundItemRepository
 import com.CampusFind.com.ui.components.*
 import java.io.File
+import android.util.Log
 
 @Composable
 fun ReportFoundItemScreen(
@@ -201,7 +202,13 @@ fun ReportFoundItemScreen(
                         cameraLauncher.launch(uri)
                     } catch (exception: ActivityNotFoundException) {
                         pendingPhotoUri = null
-                        photoFile.delete()
+                        //photoFile.delete()
+                        if (!photoFile.delete()) {
+                            Log.w(
+                                "ReportFoundItemScreen",
+                                "Unable to delete temporary photo."
+                            )
+                        }
                         Toast.makeText(context, "No camera app available.", Toast.LENGTH_SHORT).show()
                     }
                 },
