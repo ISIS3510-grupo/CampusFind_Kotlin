@@ -440,6 +440,14 @@ fun AppNavigation(
                         .popBackStack()
                 },
 
+                onHome = {
+                    navController
+                        .popBackStack(
+                            Routes.HOME,
+                            false
+                        )
+                },
+
                 onReportLost = {
                     navController.navigate(
                         Routes.REPORT_LOST

@@ -53,7 +53,9 @@ fun ProfileScreen(
     reports: List<LostReport>,
     onBack: () -> Unit = {},
     onReportLost: () -> Unit = {},
-    onOpenReport: (String) -> Unit = {}
+    onOpenReport: (String) -> Unit = {},
+    onHome: () -> Unit = {},
+
 ) {
 
     Scaffold(
@@ -61,7 +63,8 @@ fun ProfileScreen(
 
         bottomBar = {
             BottomNavigationBar(
-                selected = "Profile"
+                selected = "Profile",
+                onHome = onHome
             )
         }
     ) { padding ->
