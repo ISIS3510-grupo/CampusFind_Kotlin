@@ -26,8 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
-import com.CampusFind.com.data.FoundItemRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.CampusFind.com.ui.components.*
+import com.CampusFind.com.viewmodel.FoundItemFormViewModel
 import java.io.File
 import android.util.Log
 
@@ -37,24 +38,18 @@ fun ReportFoundItemScreen(
     suggestedLocation: String = "",
     onBack: () -> Unit = {},
     onContinue: () -> Unit = {},
-    onCancel: () -> Unit = {}
+    onCancel: () -> Unit = {},
+    viewModel: FoundItemFormViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val foundItemRepository = remember { FoundItemRepository.getInstance(context) }
-    val connectivityObserver = foundItemRepository.connectivityObserver
 
-    // Al abrir el formulario también intenta enviar lo que quedó pendiente.
-    LaunchedEffect(foundItemRepository) {
-        foundItemRepository.sendPendingItems()
+    // Al abrir el formulario también intenta enviarlo que quedó pendiente.
+    LaunchedEffect(Unit) {
+        viewModel.sendPending()
     }
 
-    // Mantiene el mismo ID durante recomposiciones y restauración del estado del formulario.
-    var itemId by rememberSaveable {
-        mutableStateOf<String?>(null)
-    }
-
-    var isSaving by remember {
-        mutableStateOf(false)
+    LaunchedEffect(suggestedLocation) {
+        viewModel.initLocation(suggestedLocation)
     }
 
     var photoUri by rememberSaveable {
@@ -73,27 +68,6 @@ fun ReportFoundItemScreen(
             photoUri = pendingPhotoUri
         }
         pendingPhotoUri = null
-    }
-
-    var category by remember {
-        mutableStateOf("")
-    }
-
-    var privateCharacteristics by rememberSaveable {
-        mutableStateOf("")
-    }
-
-    var description by remember {
-        mutableStateOf("")
-    }
-
-    var location by remember {
-        mutableStateOf(suggestedLocation)
-    }
-
-    // Este campo se muestra en el formulario, pero no se envía al repositorio actualmente.
-    var time by remember {
-        mutableStateOf("")
     }
 
     Column(
@@ -121,9 +95,9 @@ fun ReportFoundItemScreen(
         )
 
         CampusTextField(
-            value = category,
+            value = viewModel.category,
             onValueChange = {
-                category = it
+                viewModel.onCategoryChange(it)
             },
             placeholder = "Select category"
         )
@@ -137,9 +111,9 @@ fun ReportFoundItemScreen(
         )
 
         CampusTextField(
-            value = description,
+            value = viewModel.description,
             onValueChange = {
-                description = it
+                viewModel.onDescriptionChange(it)
             },
             placeholder = "Black USB-C charger"
         )
@@ -153,9 +127,9 @@ fun ReportFoundItemScreen(
         )
 
         CampusTextField(
-            value = location,
+            value = viewModel.location,
             onValueChange = {
-                location = it
+                viewModel.onLocationChange(it)
             },
             placeholder = "Library · 3rd floor"
         )
@@ -169,9 +143,9 @@ fun ReportFoundItemScreen(
         )
 
         CampusTextField(
-            value = time,
+            value = viewModel.time,
             onValueChange = {
-                time = it
+                viewModel.onTimeChange(it)
             },
             placeholder = "Today · 9:10 AM"
         )
@@ -195,7 +169,7 @@ fun ReportFoundItemScreen(
                 )
                 .clip(RoundedCornerShape(10.dp))
                 .clickable {
-                    // FileProvider permite a la app de cámara escribir en un archivo de caché.
+                    // FileProvider permite a la appde cámara escribir en un archivo de caché.
                     val photoDirectory = File(context.cacheDir, "photos")
                     photoDirectory.mkdirs()
                     val photoFile = File.createTempFile("found_item_", ".jpg", photoDirectory)
@@ -266,9 +240,9 @@ fun ReportFoundItemScreen(
         )
 
         CampusTextField(
-            value = privateCharacteristics,
+            value = viewModel.privateCharacteristics,
             onValueChange = {
-                privateCharacteristics = it
+                viewModel.onPrivateCharacteristicsChange(it)
             },
             placeholder = "Example: serial / unique mark"
         )
@@ -278,7 +252,7 @@ fun ReportFoundItemScreen(
         )
 
         Text(
-            text = "Do not publish private ownership details.",
+            text = "Do not publish private ownershipdetails.",
             fontSize = 13.sp,
             color = CampusGray
         )
@@ -287,7 +261,7 @@ fun ReportFoundItemScreen(
             modifier = Modifier.height(24.dp)
         )
 
-        if (!connectivityObserver.isConnected) {
+        if (!viewModel.isConnected) {
             Text(
                 text = "No internet connection",
                 fontSize = 13.sp,
@@ -300,58 +274,27 @@ fun ReportFoundItemScreen(
         }
 
         PrimaryButton(
-            text = if (isSaving) "Saving..." else "Continue to drop-off",
+            text = if (viewModel.isSaving) "Saving..." else "Continue to drop-off",
             onClick = {
-                if (!isSaving) {
-                    if (itemId == null) {
-                        itemId = foundItemRepository.createId()
+                // Sin red, onOfflineSaved indica guardado local; con red, onSaved indica escritura remota.
+                viewModel.save(
+                    photoUri = photoUri,
+                    onSaved = {
+                        Toast.makeText(context, "Found item saved.", Toast.LENGTH_SHORT).show()
+                        onContinue()
+                    },
+                    onOfflineSaved = {
+                        Toast.makeText(
+                            context,
+                            "Saved offline. It will be sent when you are back online.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        onContinue()
+                    },
+                    onError = { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                     }
-                    isSaving = true
-                    // Sin red, onSuccess indica guardado local; con red, indica escritura remota.
-                    if (!connectivityObserver.isConnected) {
-                        foundItemRepository.saveOffline(
-                            id = itemId!!,
-                            title = description,
-                            category = category,
-                            publicDescription = description,
-                            locationName = location,
-                            photoUri = photoUri,
-                            privateCharacteristics = privateCharacteristics,
-                            onSuccess = {
-                                isSaving = false
-                                Toast.makeText(
-                                    context,
-                                    "Saved offline. It will be sent when you are back online.",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                onContinue()
-                            },
-                            onError = { error ->
-                                isSaving = false
-                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                            }
-                        )
-                    } else {
-                        foundItemRepository.saveFoundItem(
-                            id = itemId!!,
-                            title = description,
-                            category = category,
-                            publicDescription = description,
-                            locationName = location,
-                            photoUri = photoUri,
-                            privateCharacteristics = privateCharacteristics,
-                            onSuccess = {
-                                isSaving = false
-                                Toast.makeText(context, "Found item saved.", Toast.LENGTH_SHORT).show()
-                                onContinue()
-                            },
-                            onError = { error ->
-                                isSaving = false
-                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                            }
-                        )
-                    }
-                }
+                )
             }
         )
 
