@@ -15,34 +15,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.CampusFind.com.data.ClaimsRepository
-import com.CampusFind.com.model.ClaimReview
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.CampusFind.com.viewmodel.ClaimsViewModel
 import java.util.Locale
 
 /** Carga reclamos pendientes una vez por instancia de repositorio y muestra respuesta, detalles, porcentaje y displayName del veredicto. Presenta carga, error o lista vacía; no aprueba reclamos. */
 @Composable
-fun AdminClaimsScreen(onBack: () -> Unit) {
-    val repository = remember { ClaimsRepository() }
-    var claims by remember { mutableStateOf(emptyList<ClaimReview>()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+fun AdminClaimsScreen(
+    onBack: () -> Unit,
+    viewModel: ClaimsViewModel = viewModel()
+) {
+    val claims = viewModel.claims
+    val isLoading = viewModel.isLoading
+    val errorMessage = viewModel.errorMessage
 
-    LaunchedEffect(repository) {
-        repository.getPendingClaims(
-            onSuccess = { result ->
-                claims = result
-                isLoading = false
-            },
-            onError = { error ->
-                errorMessage = error
-                isLoading = false
-            }
-        )
+    LaunchedEffect(Unit) {
+        viewModel.load()
     }
+
 
     Column(
         modifier = Modifier

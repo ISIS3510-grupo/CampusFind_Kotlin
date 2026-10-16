@@ -14,34 +14,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.CampusFind.com.data.ReportTimesRepository
-import com.CampusFind.com.service.CategoryReportTime
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.CampusFind.com.viewmodel.ReportTimesViewModel
 import java.util.Locale
 
 /** Carga la BQ tipo 2 y muestra cantidad de reportes completados y promedio en días por categoría con dos decimales. Gestiona carga, errores y ausencia de datos. */
 @Composable
-fun AdminReportTimesScreen(onBack: () -> Unit) {
-    val repository = remember { ReportTimesRepository() }
-    var reportTimes by remember { mutableStateOf(emptyList<CategoryReportTime>()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+fun AdminReportTimesScreen(
+    onBack: () -> Unit,
+    viewModel: ReportTimesViewModel = viewModel()
+) {
+    val reportTimes = viewModel.reportTimes
+    val isLoading = viewModel.isLoading
+    val errorMessage = viewModel.errorMessage
 
-    LaunchedEffect(repository) {
-        repository.getReportTimes(
-            onSuccess = { result ->
-                reportTimes = result
-                isLoading = false
-            },
-            onError = { error ->
-                errorMessage = error
-                isLoading = false
-            }
-        )
+    LaunchedEffect(Unit) {
+        viewModel.load()
     }
+
 
     Column(
         modifier = Modifier
