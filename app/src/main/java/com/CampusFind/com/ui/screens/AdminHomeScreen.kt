@@ -25,6 +25,7 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.SecondaryButton
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
 
+/** Muestra el panel administrativo y el correo actual. Cada botón delega navegación o cierre de sesión a su callback. */
 @Composable
 fun AdminHomeScreen(
     email: String,

@@ -4,6 +4,7 @@ import com.CampusFind.com.model.UserRole
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+/** Autentica con Firebase Auth y valida correo verificado y rol en users/{uid}. El rol validado se conserva solo en memoria. */
 class AuthenticationService {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -11,6 +12,7 @@ class AuthenticationService {
 
     private var validatedRole: UserRole? = null
 
+    /** Inicia sesión exigiendo el rol student y comunica el resultado mediante callbacks. */
     fun loginStudent(
         email: String,
         password: String,
@@ -20,6 +22,7 @@ class AuthenticationService {
         signIn(email, password, UserRole.STUDENT, onSuccess, onError)
     }
 
+    /** Inicia sesión exigiendo el rol admin; el rol se lee del perfil de Firestore. */
     fun loginAdmin(
         email: String,
         password: String,
@@ -29,6 +32,7 @@ class AuthenticationService {
         signIn(email, password, UserRole.ADMIN, onSuccess, onError)
     }
 
+    /** Valida dominio y contraseña, autentica, exige correo verificado y consulta el rol esperado. Cierra la sesión si la cuenta autenticada no supera la validación. */
     private fun signIn(
         email: String,
         password: String,
@@ -146,15 +150,18 @@ class AuthenticationService {
             }
     }
 
+    /** Devuelve el correo de la sesión Firebase actual, o una cadena vacía si no hay sesión. */
     fun getCurrentUserEmail(): String {
         return firebaseAuth.currentUser?.email ?: ""
     }
 
+    /** Limpia el rol validado en memoria y cierra la sesión de Firebase Auth. */
     fun signOut() {
         validatedRole = null
         firebaseAuth.signOut()
     }
 
+    /** Comprueba sesión, correo verificado, dominio Uniandes y rol STUDENT validado en esta instancia. */
     fun isStudentAuthenticated(): Boolean {
 
         val user = firebaseAuth.currentUser
@@ -165,6 +172,7 @@ class AuthenticationService {
                 validatedRole == UserRole.STUDENT
     }
 
+    /** Devuelve el UID de la sesión actual, o una cadena vacía si no existe usuario. */
     fun getCurrentUserUid(): String {
         return firebaseAuth.currentUser?.uid ?: ""
     }

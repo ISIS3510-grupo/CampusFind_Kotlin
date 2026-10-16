@@ -26,6 +26,7 @@ import com.CampusFind.com.ui.components.SecondaryButton
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
 import com.CampusFind.com.viewmodel.AuthenticationViewModel
 
+/** Muestra acceso institucional y de personal en un diálogo compartido. Delega la validación al ViewModel y navega por el callback correspondiente después del éxito. */
 @Composable
 fun LoginScreen(
     onStudentLogin: () -> Unit = {},

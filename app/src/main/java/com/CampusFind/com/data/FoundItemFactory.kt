@@ -1,11 +1,14 @@
 package com.CampusFind.com.data
 
+/** Factory que separa los datos públicos del objeto de los detalles usados para verificar propiedad. */
 object FoundItemFactory {
 
+    /** Construye el documento privado con las características de propiedad; no lo mezcla con el mapa público. */
     fun createPrivate(privateCharacteristics: String): Map<String, Any> {
         return mapOf("privateCharacteristics" to privateCharacteristics)
     }
 
+    /** Construye el mapa público con estado inicial y semestre fijo 2026-2. Incluye photoPath solo cuando hay foto; el repositorio agrega createdAt. */
     fun create(
         title: String,
         category: String,

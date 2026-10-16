@@ -5,10 +5,12 @@ import com.CampusFind.com.service.ClaimMatcher
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
+/** Carga reclamos pendientes y une las respuestas privadas con los detalles privados de los objetos. */
 class ClaimsRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
 
+    /** Consulta claims con status pending y entrega las comparaciones al completar las lecturas; comunica fallos mediante onError. */
     fun getPendingClaims(
         onSuccess: (List<ClaimReview>) -> Unit,
         onError: (String) -> Unit
@@ -24,6 +26,7 @@ class ClaimsRepository {
             }
     }
 
+    /** Lee claimPrivate y foundItemPrivate para cada reclamo, ejecuta ClaimMatcher y acumula ClaimReview. Un ID inválido o una lectura fallida detiene el proceso. */
     private fun readClaim(
         claims: List<DocumentSnapshot>,
         index: Int,

@@ -5,10 +5,12 @@ import com.CampusFind.com.service.ReportTime
 import com.CampusFind.com.service.ReportTimeCalculator
 import com.google.firebase.firestore.FirebaseFirestore
 
+/** Obtiene de Firestore los datos de la BQ tipo 2: tiempo entre reporte y hallazgo por categoría. */
 class ReportTimesRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
 
+    /** Lee lostReports, omite documentos sin categoría o reportedAt y convierte timestamps a milisegundos. El calculador excluye reportes sin foundAt. */
     fun getReportTimes(
         onSuccess: (List<CategoryReportTime>) -> Unit,
         onError: (String) -> Unit

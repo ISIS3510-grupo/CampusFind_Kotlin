@@ -22,6 +22,7 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import java.util.Locale
 
+/** Carga la BQ tipo 2 y muestra cantidad de reportes completados y promedio en días por categoría con dos decimales. Gestiona carga, errores y ausencia de datos. */
 @Composable
 fun AdminReportTimesScreen(onBack: () -> Unit) {
     val repository = remember { ReportTimesRepository() }

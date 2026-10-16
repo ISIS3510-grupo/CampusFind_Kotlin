@@ -22,6 +22,7 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import java.util.Locale
 
+/** Carga la BQ tipo 3 y muestra éxitos, totales y porcentajes por grupo, además de la diferencia en puntos porcentuales. Gestiona carga, errores y ausencia de datos. */
 @Composable
 fun AdminOwnershipScreen(onBack: () -> Unit) {
     val repository = remember { OwnershipRatesRepository() }

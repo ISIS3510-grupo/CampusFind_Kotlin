@@ -7,10 +7,12 @@ import com.CampusFind.com.service.OwnershipRates
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
+/** Construye la comparación de tasas de coincidencia para la BQ tipo 3 a partir de reclamos y documentos privados. */
 class OwnershipRatesRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
 
+    /** Carga claims y descarta referencias vacías o con barras antes de leer los datos privados y calcular tasas. */
     fun getOwnershipRates(
         onSuccess: (OwnershipRates) -> Unit,
         onError: (String) -> Unit
@@ -31,6 +33,7 @@ class OwnershipRatesRepository {
             }
     }
 
+    /** Une respuesta, características del objeto y reporte privado. El grupo se define por la existencia de lostReportPrivate, no por su contenido; el éxito depende del matcher. */
     private fun readClaim(
         claims: List<DocumentSnapshot>,
         index: Int,

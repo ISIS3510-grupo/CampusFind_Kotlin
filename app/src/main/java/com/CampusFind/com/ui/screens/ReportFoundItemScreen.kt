@@ -30,6 +30,7 @@ import com.CampusFind.com.data.FoundItemRepository
 import com.CampusFind.com.ui.components.*
 import java.io.File
 
+/** Formulario de registro con foto opcional y detalle privado. Conserva un ID para reintentos y elige guardado local o remoto según la conexión; los callbacks controlan navegación y cancelación. */
 @Composable
 fun ReportFoundItemScreen(
     suggestedLocation: String = "",
@@ -41,10 +42,12 @@ fun ReportFoundItemScreen(
     val foundItemRepository = remember { FoundItemRepository.getInstance(context) }
     val connectivityObserver = foundItemRepository.connectivityObserver
 
+    // Al abrir el formulario también intenta enviar lo que quedó pendiente.
     LaunchedEffect(foundItemRepository) {
         foundItemRepository.sendPendingItems()
     }
 
+    // Mantiene el mismo ID durante recomposiciones y restauración del estado del formulario.
     var itemId by rememberSaveable {
         mutableStateOf<String?>(null)
     }
@@ -61,6 +64,7 @@ fun ReportFoundItemScreen(
         mutableStateOf<Uri?>(null)
     }
 
+    // TakePicture escribe la foto completa en la URI; solo se adopta si la captura tuvo éxito.
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -86,6 +90,7 @@ fun ReportFoundItemScreen(
         mutableStateOf(suggestedLocation)
     }
 
+    // Este campo se muestra en el formulario, pero no se envía al repositorio actualmente.
     var time by remember {
         mutableStateOf("")
     }
@@ -188,6 +193,7 @@ fun ReportFoundItemScreen(
                 )
                 .clip(RoundedCornerShape(10.dp))
                 .clickable {
+                    // FileProvider permite a la app de cámara escribir en un archivo de caché.
                     val photoDirectory = File(context.cacheDir, "photos")
                     photoDirectory.mkdirs()
                     val photoFile = File.createTempFile("found_item_", ".jpg", photoDirectory)
@@ -198,6 +204,11 @@ fun ReportFoundItemScreen(
                     )
                     pendingPhotoUri = uri
                     try {
+                        // Abre una aplicación de cámara mediante TakePicture y le entrega la URI
+                        // donde debe guardar la foto. El resultado llega al callback de cameraLauncher.
+                        // CampusFind delega la captura: no accede directamente al sensor ni solicita
+                        // android.permission.CAMERA. FileProvider permite compartir el archivo con
+                        // la aplicación de cámara; ese acceso a la URI es distinto del permiso CAMERA.
                         cameraLauncher.launch(uri)
                     } catch (exception: ActivityNotFoundException) {
                         pendingPhotoUri = null
@@ -288,6 +299,7 @@ fun ReportFoundItemScreen(
                         itemId = foundItemRepository.createId()
                     }
                     isSaving = true
+                    // Sin red, onSuccess indica guardado local; con red, indica escritura remota.
                     if (!connectivityObserver.isConnected) {
                         foundItemRepository.saveOffline(
                             id = itemId!!,

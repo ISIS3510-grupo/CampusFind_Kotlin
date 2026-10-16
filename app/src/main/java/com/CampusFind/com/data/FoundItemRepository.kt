@@ -10,6 +10,7 @@ import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONObject
 import java.io.File
 
+/** Coordina Storage, Firestore y la cola local de objetos encontrados. Comparte una instancia con contexto de aplicación. */
 class FoundItemRepository private constructor(private val context: Context) {
 
     private val firestore = FirebaseFirestore.getInstance()
@@ -27,10 +28,12 @@ class FoundItemRepository private constructor(private val context: Context) {
         connectivityObserver.startListening()
     }
 
+    /** Reserva un ID de Firestore sin escribir un documento. Se reutiliza al guardar y reintentar para evitar crear otros documentos. */
     fun createId(): String {
         return firestore.collection("foundItems").document().id
     }
 
+    /** Guarda datos y copia de la foto en el teléfono para el usuario autenticado. onSuccess confirma persistencia local, no envío al servidor. */
     fun saveOffline(
         id: String,
         title: String,
@@ -59,6 +62,7 @@ class FoundItemRepository private constructor(private val context: Context) {
         if (connectivityObserver.isConnected) sendPendingItems()
     }
 
+    /** Inicia el envío de pendientes del usuario actual si hay internet y no existe otro envío activo. */
     fun sendPendingItems() {
         if (isSendingPending || isSaving || !connectivityObserver.isConnected) return
         val user = firebaseAuth.currentUser ?: return
@@ -68,6 +72,7 @@ class FoundItemRepository private constructor(private val context: Context) {
         sendNextPending(items, 0, store, user.uid)
     }
 
+    /** Envía secuencialmente un pendiente con su ID original y lo elimina localmente solo tras el éxito. Se detiene ante errores, desconexión o cambio de usuario. */
     private fun sendNextPending(
         items: List<JSONObject>,
         index: Int,
@@ -104,6 +109,7 @@ class FoundItemRepository private constructor(private val context: Context) {
         )
     }
 
+    /** Prepara el mapa público y sube la foto opcional a foundItems/{id}.jpg antes de guardar en Firestore. Notifica éxito o error por callbacks. */
     fun saveFoundItem(
         id: String,
         title: String,
@@ -127,6 +133,7 @@ class FoundItemRepository private constructor(private val context: Context) {
             return
         }
         isSaving = true
+        // La ruta depende del ID original: un reintento usa el mismo archivo en Storage.
         val photoPath = if (photoUri == null) null else "foundItems/$id.jpg"
         val item = FoundItemFactory.create(
             title = title,
@@ -153,6 +160,7 @@ class FoundItemRepository private constructor(private val context: Context) {
             }
     }
 
+    /** Agrega la hora del servidor y escribe el documento público y el privado opcional en un lote atómico. Storage no forma parte de este lote. */
     private fun saveDocument(
         id: String,
         item: Map<String, Any>,
@@ -161,8 +169,10 @@ class FoundItemRepository private constructor(private val context: Context) {
         onError: (String) -> Unit
     ) {
         val document = item.toMutableMap()
+        // Evita depender del reloj del teléfono; un nuevo set también actualiza esta hora.
         document["createdAt"] = FieldValue.serverTimestamp()
         val batch = firestore.batch()
+        // set escribe en el ID recibido, en lugar de generar otro con add.
         batch.set(firestore.collection("foundItems").document(id), document)
         if (privateCharacteristics.isNotBlank()) {
             batch.set(
@@ -186,6 +196,7 @@ class FoundItemRepository private constructor(private val context: Context) {
     companion object {
         private var instance: FoundItemRepository? = null
 
+        /** Devuelve la instancia compartida y conserva applicationContext para no retener una Activity. */
         fun getInstance(context: Context): FoundItemRepository {
             if (instance == null) {
                 instance = FoundItemRepository(context.applicationContext)

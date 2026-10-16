@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.CampusFind.com.service.AuthenticationService
 
+/** Expone carga, errores y autenticación como estado de Compose y coordina el servicio de acceso. */
 class AuthenticationViewModel : ViewModel() {
 
     private val authenticationService =
@@ -22,6 +23,7 @@ class AuthenticationViewModel : ViewModel() {
     )
         private set
 
+    /** Valida campos obligatorios, activa la carga y actualiza el estado según el resultado del acceso de estudiante. */
     fun loginStudent(
         email: String,
         password: String,
@@ -59,6 +61,7 @@ class AuthenticationViewModel : ViewModel() {
         )
     }
 
+    /** Valida campos obligatorios y coordina el acceso administrativo; invoca onSuccess después de validar el rol. */
     fun loginAdmin(
         email: String,
         password: String,
@@ -96,18 +99,22 @@ class AuthenticationViewModel : ViewModel() {
         )
     }
 
+    /** Obtiene del servicio el correo de la sesión actual para mostrarlo en la interfaz. */
     fun getCurrentUserEmail(): String {
         return authenticationService.getCurrentUserEmail()
     }
 
+    /** Borra el mensaje de error visible al editar campos o volver a abrir el diálogo. */
     fun clearError() {
         errorMessage = null
     }
 
+    /** Cierra la sesión mediante el servicio y marca la interfaz como no autenticada. */
     fun logout() {
         authenticationService.signOut()
         isAuthenticated = false
     }
+    /** Expone el UID actual obtenido del servicio de autenticación. */
     fun getCurrentUserUid(): String {
         return authenticationService.getCurrentUserUid()
     }

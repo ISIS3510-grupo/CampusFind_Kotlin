@@ -23,6 +23,7 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import java.util.Locale
 
+/** Carga reclamos pendientes una vez por instancia de repositorio y muestra respuesta, detalles, porcentaje y displayName del veredicto. Presenta carga, error o lista vacía; no aprueba reclamos. */
 @Composable
 fun AdminClaimsScreen(onBack: () -> Unit) {
     val repository = remember { ClaimsRepository() }
