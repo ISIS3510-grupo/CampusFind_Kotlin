@@ -63,7 +63,20 @@ class LostReportsViewModel : ViewModel() {
                                     document.getTimestamp("reportedAt"),
                                 imageUrl =
                                     document.getString("imageUrl")
-                                        ?: ""
+                                        ?: "",
+                                category =
+                                    document.getString("category")
+                                        ?: "",
+                                description =
+                                    document.getString("description")
+                                        ?: "",
+                                latitude =
+                                    (document.get("latitude") as? Number)
+                                        ?.toDouble(),
+                                longitude =
+                                    (document.get("longitude") as? Number)
+                                        ?.toDouble()
+
                             )
                         }
                 }

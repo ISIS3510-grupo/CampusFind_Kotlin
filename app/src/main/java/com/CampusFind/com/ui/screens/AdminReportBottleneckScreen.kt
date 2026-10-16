@@ -34,6 +34,7 @@ fun AdminReportBottleneckScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .verticalScroll(
                 rememberScrollState()
             )

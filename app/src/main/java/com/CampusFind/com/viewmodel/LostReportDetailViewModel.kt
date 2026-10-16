@@ -50,6 +50,18 @@ class LostReportDetailViewModel : ViewModel() {
                                 ?: "",
                         statusChangedAt =
                             document.getTimestamp("statusChangedAt"),
+                        latitude =
+                            (document.get("latitude") as? Number)
+                                ?.toDouble(),
+                        longitude =
+                            (document.get("longitude") as? Number)
+                                ?.toDouble(),
+                        description =
+                            document.getString("description")
+                                ?: "",
+                        category =
+                            document.getString("category")
+                                ?: ""
                     )
             }
     }

@@ -5,6 +5,7 @@ import android.net.Uri
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
+import android.util.Log
 
 /** Persiste una cola por usuario en SharedPreferences y las fotos en archivos internos del teléfono. */
 class PendingFoundItemStore(private val context: Context, userId: String) {
@@ -51,12 +52,18 @@ class PendingFoundItemStore(private val context: Context, userId: String) {
             .put("privateCharacteristics", privateCharacteristics)
 
         if (!preferences.edit().putString(id, item.toString()).commit()) {
-            if (photoPath.isNotEmpty()) File(photoPath).delete()
+            //if (photoPath.isNotEmpty()) File(photoPath).delete()
+            if (photoPath.isNotEmpty() && !File(photoPath).delete()) {
+                Log.w("PendingFoundItemStore", "Unable to delete temporary photo.")
+            }
             throw IOException("Unable to save item offline.")
         }
         if (previous != null) {
             val previousPath = JSONObject(previous).getString("photoPath")
-            if (previousPath.isNotEmpty()) File(previousPath).delete()
+            //if (previousPath.isNotEmpty()) File(previousPath).delete()
+            if (previousPath.isNotEmpty() && !File(previousPath).delete()) {
+                Log.w("PendingFoundItemStore", "Unable to delete previous photo.")
+            }
         }
     }
 
@@ -74,6 +81,9 @@ class PendingFoundItemStore(private val context: Context, userId: String) {
         if (!preferences.edit().remove(id).commit()) {
             throw IOException("Unable to remove pending item.")
         }
-        if (photoPath.isNotEmpty()) File(photoPath).delete()
+        //if (photoPath.isNotEmpty()) File(photoPath).delete()
+        if (photoPath.isNotEmpty() && !File(photoPath).delete()) {
+            Log.w("PendingFoundItemStore", "Unable to delete pending item photo.")
+        }
     }
 }

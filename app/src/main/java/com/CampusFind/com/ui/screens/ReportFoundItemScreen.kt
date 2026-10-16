@@ -29,6 +29,7 @@ import androidx.core.content.FileProvider
 import com.CampusFind.com.data.FoundItemRepository
 import com.CampusFind.com.ui.components.*
 import java.io.File
+import android.util.Log
 
 /** Formulario de registro con foto opcional y detalle privado. Conserva un ID para reintentos y elige guardado local o remoto según la conexión; los callbacks controlan navegación y cancelación. */
 @Composable
@@ -98,6 +99,7 @@ fun ReportFoundItemScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(
                 horizontal = 24.dp,
@@ -212,7 +214,13 @@ fun ReportFoundItemScreen(
                         cameraLauncher.launch(uri)
                     } catch (exception: ActivityNotFoundException) {
                         pendingPhotoUri = null
-                        photoFile.delete()
+
+                        if (!photoFile.delete()) {
+                            Log.w(
+                                "ReportFoundItemScreen",
+                                "Unable to delete temporary photo."
+                            )
+                        }
                         Toast.makeText(context, "No camera app available.", Toast.LENGTH_SHORT).show()
                     }
                 },
