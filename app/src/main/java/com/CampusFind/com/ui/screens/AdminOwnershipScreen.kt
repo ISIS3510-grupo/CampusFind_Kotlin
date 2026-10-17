@@ -14,33 +14,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.CampusFind.com.data.OwnershipRatesRepository
-import com.CampusFind.com.service.OwnershipRateCalculator
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.CampusFind.com.viewmodel.OwnershipRatesViewModel
 import java.util.Locale
 
 @Composable
-fun AdminOwnershipScreen(onBack: () -> Unit) {
-    val repository = remember { OwnershipRatesRepository() }
-    var rates by remember { mutableStateOf(OwnershipRateCalculator.calculate(emptyList())) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+fun AdminOwnershipScreen(
+    onBack: () -> Unit,
+    viewModel: OwnershipRatesViewModel = viewModel()
+) {
+    val rates = viewModel.rates
+    val isLoading = viewModel.isLoading
+    val errorMessage = viewModel.errorMessage
 
-    LaunchedEffect(repository) {
-        repository.getOwnershipRates(
-            onSuccess = { result ->
-                rates = result
-                isLoading = false
-            },
-            onError = { error ->
-                errorMessage = error
-                isLoading = false
-            }
-        )
+    LaunchedEffect(Unit) {
+        viewModel.load()
     }
+
 
     Column(
         modifier = Modifier
