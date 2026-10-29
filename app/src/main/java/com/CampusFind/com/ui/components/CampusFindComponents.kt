@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 val CampusYellow = Color(0xFFFEFD05)
 val CampusGray = Color(0xFF999798)
@@ -296,5 +300,79 @@ private fun NavItem(
             fontSize = 10.sp,
             color = color
         )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CampusDropdownField(
+    value: String,
+    options: List<String>,
+    onSelected: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {
+            if (enabled) {
+                expanded = !expanded
+            }
+        }
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            readOnly = true,
+            enabled = enabled,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    color = CampusGray
+                )
+            },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = expanded
+                )
+            },
+            modifier = modifier
+                .fillMaxWidth()
+                .menuAnchor(
+                    ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                    enabled
+                )
+                .height(56.dp),
+            singleLine = true,
+            shape = RoundedCornerShape(10.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Black,
+                unfocusedBorderColor = CampusBorder
+            )
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                expanded = false
+            }
+        ) {
+            options.forEach { option ->
+
+                DropdownMenuItem(
+                    text = {
+                        Text(option)
+                    },
+                    onClick = {
+                        onSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }

@@ -35,4 +35,44 @@ class LostReportRepository {
         description = getString("description") ?: "",
         category = getString("category") ?: ""
     )
+
+    fun getCategories(
+        onSuccess: (List<String>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        firestore
+            .collection("appConfig")
+            .document("general")
+            .get()
+            .addOnSuccessListener { document ->
+
+                val categories =
+                    (document.get("categories") as? List<*>)
+                        ?.mapNotNull { it as? String }
+                        ?.map { it.trim() }
+                        ?.filter { it.isNotBlank() }
+                        ?.distinct()
+                        ?.toMutableList()
+                        ?: mutableListOf()
+
+                val hasOther =
+                    categories.any {
+                        it.equals("other", ignoreCase = true) ||
+                                it.equals("otro", ignoreCase = true)
+                    }
+
+                if (!hasOther) {
+                    categories.add("other")
+                }
+
+                onSuccess(categories)
+            }
+            .addOnFailureListener { exception ->
+
+                onError(
+                    exception.localizedMessage
+                        ?: "Unable to load categories."
+                )
+            }
+    }
 }

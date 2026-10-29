@@ -45,6 +45,7 @@ import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
 import com.CampusFind.com.viewmodel.SmartMatchingViewModel
+import com.CampusFind.com.viewmodel.ReportLostItemViewModel
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -471,6 +472,10 @@ fun AppNavigation(
                     LocationViewModel =
                 viewModel()
 
+            val reportLostItemViewModel:
+                    ReportLostItemViewModel =
+                viewModel()
+
             val requestLocationPermission =
                 rememberLocationPermissionLauncher { status ->
 
@@ -482,6 +487,7 @@ fun AppNavigation(
 
             LaunchedEffect(Unit) {
                 requestLocationPermission()
+                reportLostItemViewModel.loadCategories()
             }
 
             val suggestedLocation =
