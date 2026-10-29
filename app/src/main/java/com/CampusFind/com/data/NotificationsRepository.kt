@@ -6,7 +6,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
-class NotificationsDataSource {
+class NotificationsRepository {
 
     private val firestore =
         FirebaseFirestore.getInstance()

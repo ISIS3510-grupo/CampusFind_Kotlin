@@ -1,6 +1,7 @@
 package com.CampusFind.com.navigation
 
 import android.Manifest
+import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -10,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,15 +20,16 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
-import com.CampusFind.com.ui.screens.AdminReportBottleneckScreen
-import com.CampusFind.com.ui.screens.BiometricVerificationScreen
-import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
-import com.CampusFind.com.ui.screens.HomeScreen
-
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
+import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
+import com.CampusFind.com.ui.screens.AdminReportBottleneckScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
+import com.CampusFind.com.ui.screens.BiometricVerificationScreen
+import com.CampusFind.com.ui.screens.DonationPotentialScreen
+import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
+import com.CampusFind.com.ui.screens.HomeScreen
 import com.CampusFind.com.ui.screens.LoginScreen
 import com.CampusFind.com.ui.screens.LostReportDetailScreen
 import com.CampusFind.com.ui.screens.MatchAlertScreen
@@ -34,17 +37,14 @@ import com.CampusFind.com.ui.screens.ProfileScreen
 import com.CampusFind.com.ui.screens.ReportFoundItemScreen
 import com.CampusFind.com.ui.screens.ReportLostItemScreen
 import com.CampusFind.com.viewmodel.AuthenticationViewModel
+import com.CampusFind.com.viewmodel.DonationPotentialViewModel
+import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
 import com.CampusFind.com.viewmodel.LocationViewModel
+import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
-
 import com.CampusFind.com.viewmodel.ProfileViewModel
-import com.CampusFind.com.viewmodel.LostReportDetailViewModel
-import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
-import com.CampusFind.com.ui.screens.DonationPotentialScreen
-import com.CampusFind.com.viewmodel.DonationPotentialViewModel
 import com.CampusFind.com.viewmodel.SmartMatchingViewModel
-import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -536,7 +536,11 @@ fun AppNavigation(
 
             val foundItemDetailViewModel:
                     FoundItemDetailViewModel =
-                viewModel()
+                viewModel(
+                    factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                        context.applicationContext as Application
+                    )
+                )
 
             val lostReportDetailViewModel:
                     LostReportDetailViewModel =

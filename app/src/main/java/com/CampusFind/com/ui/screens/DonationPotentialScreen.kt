@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.CampusFind.com.viewmodel.DonationCategoryResult
+import com.CampusFind.com.model.DonationCategoryResult
 
 @Composable
 fun DonationPotentialScreen(

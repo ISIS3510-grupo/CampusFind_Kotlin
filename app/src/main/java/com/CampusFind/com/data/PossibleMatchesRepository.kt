@@ -5,7 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
-class PossibleMatchesDataSource {
+class PossibleMatchesRepository {
 
     private val firestore =
         FirebaseFirestore.getInstance()

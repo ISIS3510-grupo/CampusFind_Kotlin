@@ -4,14 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.CampusFind.com.data.PossibleMatchesDataSource
+import com.CampusFind.com.data.PossibleMatchesRepository
 import com.CampusFind.com.model.PossibleMatch
 import com.google.firebase.firestore.ListenerRegistration
 
 class PossibleMatchesViewModel : ViewModel() {
 
-    private val dataSource =
-        PossibleMatchesDataSource()
+    private val repository =
+        PossibleMatchesRepository()
 
     var matches by
     mutableStateOf<List<PossibleMatch>>(
@@ -43,7 +43,7 @@ class PossibleMatchesViewModel : ViewModel() {
         errorMessage = null
 
         listener =
-            dataSource.observePossibleMatches(
+            repository.observePossibleMatches(
 
                 reportId = reportId,
 

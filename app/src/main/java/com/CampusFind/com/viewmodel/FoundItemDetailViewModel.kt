@@ -1,23 +1,16 @@
 package com.CampusFind.com.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.AndroidViewModel
+import com.CampusFind.com.data.FoundItemRepository
+import com.CampusFind.com.model.FoundItemDetail
 
-data class FoundItemDetail(
-    val id: String = "",
-    val title: String = "",
-    val locationName: String = "",
-    val createdAt: Timestamp? = null
-)
+class FoundItemDetailViewModel(application: Application) : AndroidViewModel(application) {
 
-class FoundItemDetailViewModel : ViewModel() {
-
-    private val firestore =
-        FirebaseFirestore.getInstance()
+    private val repository = FoundItemRepository.getInstance(application)
 
     var foundItem by
     mutableStateOf<FoundItemDetail?>(null)
@@ -31,24 +24,6 @@ class FoundItemDetailViewModel : ViewModel() {
             return
         }
 
-        firestore
-            .collection("foundItems")
-            .document(foundItemId)
-            .get()
-            .addOnSuccessListener { document ->
-
-                foundItem =
-                    FoundItemDetail(
-                        id = document.id,
-                        title =
-                            document.getString("title")
-                                ?: "",
-                        locationName =
-                            document.getString("locationName")
-                                ?: "",
-                        createdAt =
-                            document.getTimestamp("createdAt")
-                    )
-            }
+        repository.getFoundItem(foundItemId) { foundItem = it }
     }
 }
