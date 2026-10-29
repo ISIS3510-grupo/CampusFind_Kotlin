@@ -1,4 +1,3 @@
-
 package com.CampusFind.com.ui.screens
 
 import androidx.compose.foundation.border
@@ -35,6 +34,8 @@ import com.CampusFind.com.ui.components.CampusDropdownField
 import com.CampusFind.com.ui.components.FormLabel
 import com.CampusFind.com.ui.components.PrimaryButton
 import com.CampusFind.com.ui.components.ScreenTitle
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun ReportLostItemScreen(
@@ -44,7 +45,10 @@ fun ReportLostItemScreen(
     categories: List<String> = emptyList(),
     locations: List<String> = emptyList(),
     onBack: () -> Unit = {},
-    onSubmit: () -> Unit = {}
+    errorMessage: String? = null,
+    isSaving: Boolean = false,
+    onSubmit: (String, String, String, String) -> Unit =
+        { _, _, _, _ -> }
 ) {
 
     var category by remember {
@@ -86,6 +90,7 @@ fun ReportLostItemScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(
                 horizontal = 24.dp,
                 vertical = 22.dp
@@ -255,8 +260,28 @@ fun ReportLostItemScreen(
 
         // SUBMIT
         PrimaryButton(
-            text = "Submit report",
-            onClick = onSubmit
+            text = if (isSaving) "Saving..." else "Submit report",
+            onClick = {
+                if (!isSaving) {
+                    onSubmit(
+                        category,
+                        description,
+                        location,
+                        privateDetail
+                    )
+                }
+            }
         )
+
+        if (errorMessage != null) {
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }

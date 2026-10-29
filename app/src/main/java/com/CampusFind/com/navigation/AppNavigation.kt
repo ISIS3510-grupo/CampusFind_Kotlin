@@ -500,6 +500,8 @@ fun AppNavigation(
                     suggestedLocation,
 
                 locations = reportLostItemViewModel.locations,
+                errorMessage = reportLostItemViewModel.errorMessage,
+                isSaving = reportLostItemViewModel.isSaving,
 
                 locationError =
                     locationViewModel
@@ -517,9 +519,18 @@ fun AppNavigation(
                         .popBackStack()
                 },
 
-                onSubmit = {
-                    navController
-                        .popBackStack()
+                onSubmit = { category, description, locationName, privateDetail ->
+
+                    reportLostItemViewModel.submitReport(
+                        category = category,
+                        description = description,
+                        locationName = locationName,
+                        privateDetail = privateDetail,
+
+                        onSuccess = {
+                            navController.popBackStack()
+                        }
+                    )
                 }
             )
         }
@@ -680,8 +691,18 @@ fun AppNavigation(
         composable(
             Routes.REPORT_FOUND
         ) {
+            val optionsViewModel: ReportLostItemViewModel = viewModel()
+
+            LaunchedEffect(Unit) {
+                optionsViewModel.loadCategories()
+                optionsViewModel.loadLocations()
+            }
 
             ReportFoundItemScreen(
+
+                categories = optionsViewModel.categories,
+                locations = optionsViewModel.locations,
+
                 onBack = {
                     navController
                         .popBackStack()

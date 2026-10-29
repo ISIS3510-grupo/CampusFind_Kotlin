@@ -86,9 +86,8 @@ class PossibleMatchesRepository {
                                     ) ?: "",
 
                                 strategyVersion =
-                                    document.getString(
-                                        "strategyVersion"
-                                    ) ?: "",
+                                    document.get("strategyVersion")
+                                        ?.toString() ?: "",
 
                                 createdAt =
                                     document.getTimestamp(

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.CampusFind.com.data.LostReportRepository
 import com.CampusFind.com.data.OfficeLocationRepository
 
+
 class ReportLostItemViewModel : ViewModel() {
 
     private val repository =
@@ -22,6 +23,9 @@ class ReportLostItemViewModel : ViewModel() {
 
     var errorMessage by
     mutableStateOf<String?>(null)
+        private set
+
+    var isSaving by mutableStateOf(false)
         private set
 
     private val locationRepository = OfficeLocationRepository()
@@ -42,6 +46,38 @@ class ReportLostItemViewModel : ViewModel() {
             }
         )
     }
+
+
+    fun submitReport(
+        category: String,
+        description: String,
+        locationName: String,
+        privateDetail: String,
+        onSuccess: (String) -> Unit
+    ) {
+        if (isSaving) return
+
+        isSaving = true
+        errorMessage = null
+
+        repository.createReport(
+            category = category,
+            description = description,
+            locationName = locationName,
+            privateDetail = privateDetail,
+
+            onSuccess = { reportId ->
+                isSaving = false
+                onSuccess(reportId)
+            },
+
+            onError = { error ->
+                isSaving = false
+                errorMessage = error
+            }
+        )
+    }
+
     fun loadCategories() {
 
         isLoadingCategories = true
