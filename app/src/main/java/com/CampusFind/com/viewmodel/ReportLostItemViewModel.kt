@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.CampusFind.com.data.LostReportRepository
+import com.CampusFind.com.data.OfficeLocationRepository
 
 class ReportLostItemViewModel : ViewModel() {
 
@@ -23,6 +24,24 @@ class ReportLostItemViewModel : ViewModel() {
     mutableStateOf<String?>(null)
         private set
 
+    private val locationRepository = OfficeLocationRepository()
+
+    var locations by mutableStateOf<List<String>>(emptyList())
+        private set
+
+    fun loadLocations() {
+        locationRepository.getActiveLocations(
+            onSuccess = { result ->
+                locations = result
+                    .map { it.name.trim() }
+                    .filter { it.isNotBlank() }
+                    .distinct()
+            },
+            onError = { error ->
+                errorMessage = error
+            }
+        )
+    }
     fun loadCategories() {
 
         isLoadingCategories = true

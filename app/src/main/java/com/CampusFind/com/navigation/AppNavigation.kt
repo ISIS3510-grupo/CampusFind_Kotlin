@@ -488,6 +488,7 @@ fun AppNavigation(
             LaunchedEffect(Unit) {
                 requestLocationPermission()
                 reportLostItemViewModel.loadCategories()
+                reportLostItemViewModel.loadLocations()
             }
 
             val suggestedLocation =
@@ -498,6 +499,8 @@ fun AppNavigation(
                 suggestedLocation =
                     suggestedLocation,
 
+                locations = reportLostItemViewModel.locations,
+
                 locationError =
                     locationViewModel
                         .errorMessage,
@@ -505,6 +508,9 @@ fun AppNavigation(
                 isLocationLoading =
                     locationViewModel
                         .isLoading,
+
+                categories =
+                    reportLostItemViewModel.categories,
 
                 onBack = {
                     navController

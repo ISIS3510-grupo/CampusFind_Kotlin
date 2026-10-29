@@ -1,3 +1,4 @@
+
 package com.CampusFind.com.ui.screens
 
 import androidx.compose.foundation.border
@@ -26,9 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.CampusTextField
+import com.CampusFind.com.ui.components.CampusDropdownField
 import com.CampusFind.com.ui.components.FormLabel
 import com.CampusFind.com.ui.components.PrimaryButton
 import com.CampusFind.com.ui.components.ScreenTitle
@@ -38,9 +41,12 @@ fun ReportLostItemScreen(
     suggestedLocation: String = "",
     locationError: String? = null,
     isLocationLoading: Boolean = false,
+    categories: List<String> = emptyList(),
+    locations: List<String> = emptyList(),
     onBack: () -> Unit = {},
     onSubmit: () -> Unit = {}
 ) {
+
     var category by remember {
         mutableStateOf("")
     }
@@ -61,8 +67,18 @@ fun ReportLostItemScreen(
         mutableStateOf("")
     }
 
+    // Evita que el GPS sobrescriba la elección del usuario
+    var locationManuallySelected by remember {
+        mutableStateOf(false)
+    }
+
+    // Actualiza la sugerencia GPS si el usuario
+    // todavía no ha escogido otra ubicación
     LaunchedEffect(suggestedLocation) {
-        if (suggestedLocation.isNotBlank()) {
+        if (
+            suggestedLocation.isNotBlank() &&
+            !locationManuallySelected
+        ) {
             location = suggestedLocation
         }
     }
@@ -75,6 +91,7 @@ fun ReportLostItemScreen(
                 vertical = 22.dp
             )
     ) {
+
         ScreenTitle(
             title = "Report lost item",
             subtitle = "Create the report from your profile",
@@ -85,13 +102,15 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(20.dp)
         )
 
+        // CATEGORY
         FormLabel(
             text = "Category"
         )
 
-        CampusTextField(
+        CampusDropdownField(
             value = category,
-            onValueChange = {
+            options = categories,
+            onSelected = {
                 category = it
             },
             placeholder = "Select category"
@@ -101,6 +120,7 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(14.dp)
         )
 
+        // DESCRIPTION
         FormLabel(
             text = "Short description"
         )
@@ -117,19 +137,23 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(14.dp)
         )
 
+        // LOCATION
         FormLabel(
             text = "Where was it lost?"
         )
 
-        CampusTextField(
+        CampusDropdownField(
             value = location,
-            onValueChange = {
+            options = locations,
+            onSelected = {
                 location = it
+                locationManuallySelected = true
             },
-            placeholder = "Mario Laserna Building"
+            placeholder = "Select location"
         )
 
         if (isLocationLoading) {
+
             Spacer(
                 modifier = Modifier.height(4.dp)
             )
@@ -142,6 +166,7 @@ fun ReportLostItemScreen(
         }
 
         if (locationError != null) {
+
             Spacer(
                 modifier = Modifier.height(4.dp)
             )
@@ -157,6 +182,7 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(14.dp)
         )
 
+        // DATE AND TIME
         FormLabel(
             text = "Approximate date and time"
         )
@@ -173,6 +199,7 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(14.dp)
         )
 
+        // PHOTO
         FormLabel(
             text = "Photo (optional)"
         )
@@ -189,6 +216,7 @@ fun ReportLostItemScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
+
             Icon(
                 imageVector = Icons.Default.Image,
                 contentDescription = null,
@@ -208,6 +236,7 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(20.dp)
         )
 
+        // PRIVATE VERIFICATION DETAIL
         FormLabel(
             text = "Private verification detail"
         )
@@ -224,6 +253,7 @@ fun ReportLostItemScreen(
             modifier = Modifier.height(18.dp)
         )
 
+        // SUBMIT
         PrimaryButton(
             text = "Submit report",
             onClick = onSubmit
