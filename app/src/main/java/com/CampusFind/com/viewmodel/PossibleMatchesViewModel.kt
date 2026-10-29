@@ -33,6 +33,29 @@ class PossibleMatchesViewModel : ViewModel() {
     private var listener:
             ListenerRegistration? = null
 
+    var selectedFoundItemId by mutableStateOf<String?>(null)
+        private set
+
+    var selectedMatchError by mutableStateOf<String?>(null)
+        private set
+
+    fun loadMatch(matchId: String) {
+        selectedFoundItemId = null
+        selectedMatchError = null
+
+        repository.getFoundItemIdForMatch(
+            matchId = matchId,
+
+            onSuccess = { foundItemId ->
+                selectedFoundItemId = foundItemId
+            },
+
+            onError = { error ->
+                selectedMatchError = error
+            }
+        )
+    }
+
     fun observeMatches(
         reportId: String
     ) {

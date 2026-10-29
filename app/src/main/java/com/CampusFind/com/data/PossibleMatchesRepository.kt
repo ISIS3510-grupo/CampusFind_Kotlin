@@ -100,4 +100,47 @@ class PossibleMatchesRepository {
                 onUpdate(matches)
             }
     }
+    fun getFoundItemIdForMatch(
+        matchId: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val uid = auth.currentUser?.uid
+
+        if (uid == null) {
+            onError("User is not authenticated")
+            return
+        }
+
+        if (matchId.isBlank()) {
+            onError("Invalid match ID")
+            return
+        }
+
+        firestore.collection("matches")
+            .document(matchId)
+            .get()
+            .addOnSuccessListener { document ->
+
+                val foundItemId =
+                    document.getString("foundItemId")
+
+                if (
+                    !document.exists() ||
+                    document.getString("ownerUid") != uid ||
+                    foundItemId.isNullOrBlank()
+                ) {
+                    onError("Possible match not found")
+                    return@addOnSuccessListener
+                }
+
+                onSuccess(foundItemId)
+            }
+            .addOnFailureListener { exception ->
+                onError(
+                    exception.localizedMessage
+                        ?: "Error loading possible match"
+                )
+            }
+    }
 }

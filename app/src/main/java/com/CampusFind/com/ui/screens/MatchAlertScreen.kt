@@ -12,9 +12,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.CampusFind.com.ui.components.*
+import com.CampusFind.com.model.FoundItemDetail
 
 @Composable
 fun MatchAlertScreen(
+    foundItem: FoundItemDetail? = null,
+    errorMessage: String? = null,
     onBack: () -> Unit = {},
     onReviewMatch: () -> Unit = {},
     onNotMine: () -> Unit = {}
@@ -65,7 +68,12 @@ fun MatchAlertScreen(
                 )
 
                 Text(
-                    text = "Scientific calculator",
+                    text = foundItem?.title
+                        ?: if (errorMessage != null) {
+                            "Unable to load match"
+                        } else {
+                            "Loading match details..."
+                        },
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -75,7 +83,11 @@ fun MatchAlertScreen(
                 )
 
                 Text(
-                    text = "Found in Mario Laserna · Today",
+                    text = errorMessage
+                        ?: foundItem?.locationName?.let {
+                            "Found in $it"
+                        }
+                        ?: "Loading location...",
                     fontSize = 13.sp,
                     color = CampusGray
                 )
@@ -103,10 +115,12 @@ fun MatchAlertScreen(
                 modifier = Modifier.height(34.dp)
             )
 
-            PrimaryButton(
-                text = "Review this match",
-                onClick = onReviewMatch
-            )
+            if (foundItem != null) {
+                PrimaryButton(
+                    text = "Review this match",
+                    onClick = onReviewMatch
+                )
+            }
 
             Spacer(
                 modifier = Modifier.height(14.dp)

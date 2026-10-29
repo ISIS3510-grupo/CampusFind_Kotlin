@@ -46,6 +46,7 @@ import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
 import com.CampusFind.com.viewmodel.SmartMatchingViewModel
 import com.CampusFind.com.viewmodel.ReportLostItemViewModel
+import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -57,7 +58,7 @@ object Routes {
     const val REPORT_LOST = "report_lost"
     const val DONATION_POTENTIAL = "donation_potential"
     const val LOST_REPORT_DETAIL = "lost_report_detail/{reportId}"
-    const val MATCH_ALERT = "match_alert"
+    const val MATCH_ALERT = "match_alert/{matchId}"
     const val REPORT_FOUND = "report_found"
     const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
     const val HOME = "home"
@@ -69,6 +70,9 @@ object Routes {
         reportId: String
     ): String {
         return "lost_report_detail/$reportId"
+    }
+    fun matchAlert(matchId: String): String {
+        return "match_alert/${android.net.Uri.encode(matchId)}"
     }
 }
 
@@ -90,7 +94,7 @@ fun AppNavigation(
         ) {
 
             navController.navigate(
-                Routes.MATCH_ALERT
+                Routes.matchAlert(notificationMatchId)
             ) {
                 launchSingleTop = true
             }
@@ -573,12 +577,20 @@ fun AppNavigation(
                     SmartMatchingViewModel =
                 viewModel()
 
+            val possibleMatchesViewModel:
+                    PossibleMatchesViewModel =
+                viewModel()
+
             LaunchedEffect(
                 reportId
             ) {
 
                 lostReportDetailViewModel
                     .loadReport(
+                        reportId
+                    )
+                possibleMatchesViewModel
+                    .observeMatches(
                         reportId
                     )
             }
@@ -631,9 +643,8 @@ fun AppNavigation(
                         .foundItem,
 
                 matchCount =
-                    smartMatchingViewModel
-                        .matches
-                        .size,
+                    possibleMatchesViewModel
+                        .matchCount,
 
                 onBack = {
                     navController
@@ -641,9 +652,14 @@ fun AppNavigation(
                 },
 
                 onMatchClick = {
-                    navController.navigate(
-                        Routes.MATCH_ALERT
-                    )
+                    possibleMatchesViewModel.matches
+                        .firstOrNull()
+                        ?.id
+                        ?.let { matchId ->
+                            navController.navigate(
+                                Routes.matchAlert(matchId)
+                            )
+                        }
                 },
 
                 onRecoveredElsewhere = {
@@ -654,13 +670,51 @@ fun AppNavigation(
         }
 
         composable(
-            Routes.MATCH_ALERT
-        ) {
+            route = Routes.MATCH_ALERT,
+            arguments = listOf(
+                navArgument("matchId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+
+            val matchId = backStackEntry
+                .arguments
+                ?.getString("matchId")
+                ?: ""
+
+            val possibleMatchesViewModel:
+                    PossibleMatchesViewModel = viewModel()
+
+            val foundItemDetailViewModel:
+                    FoundItemDetailViewModel = viewModel(
+                factory = ViewModelProvider.AndroidViewModelFactory
+                    .getInstance(
+                        context.applicationContext as Application
+                    )
+            )
+
+            LaunchedEffect(matchId) {
+                possibleMatchesViewModel.loadMatch(matchId)
+            }
+
+            LaunchedEffect(
+                possibleMatchesViewModel.selectedFoundItemId
+            ) {
+                possibleMatchesViewModel.selectedFoundItemId
+                    ?.let { foundItemId ->
+                        foundItemDetailViewModel.loadFoundItem(
+                            foundItemId
+                        )
+                    }
+            }
 
             MatchAlertScreen(
+                foundItem = foundItemDetailViewModel.foundItem,
+                errorMessage = possibleMatchesViewModel.selectedMatchError,
+
                 onBack = {
-                    navController
-                        .navigateUp()
+                    navController.navigateUp()
                 },
 
                 onReviewMatch = {
@@ -670,8 +724,7 @@ fun AppNavigation(
                 },
 
                 onNotMine = {
-                    navController
-                        .popBackStack()
+                    navController.popBackStack()
                 }
             )
         }
