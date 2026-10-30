@@ -44,7 +44,6 @@ import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
-import com.CampusFind.com.viewmodel.SmartMatchingViewModel
 import com.CampusFind.com.viewmodel.ReportLostItemViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import androidx.compose.runtime.DisposableEffect
@@ -590,10 +589,6 @@ fun AppNavigation(
                     LostReportDetailViewModel =
                 viewModel()
 
-            val smartMatchingViewModel:
-                    SmartMatchingViewModel =
-                viewModel()
-
             val possibleMatchesViewModel:
                     PossibleMatchesViewModel =
                 viewModel()
@@ -613,35 +608,17 @@ fun AppNavigation(
             }
 
             LaunchedEffect(
-                lostReportDetailViewModel
-                    .report
-                    ?.id
-            ) {
-
-                val report =
-                    lostReportDetailViewModel
-                        .report
-                        ?: return@LaunchedEffect
-
-                smartMatchingViewModel
-                    .generateMatches(
-                        report
-                    )
-            }
-
-            LaunchedEffect(
-                smartMatchingViewModel
+                possibleMatchesViewModel
                     .matches
                     .firstOrNull()
-                    ?.foundItem
-                    ?.id
+                    ?.foundItemId
             ) {
+
                 val foundItemId =
-                    smartMatchingViewModel
+                    possibleMatchesViewModel
                         .matches
                         .firstOrNull()
-                        ?.foundItem
-                        ?.id
+                        ?.foundItemId
                         ?: return@LaunchedEffect
 
                 foundItemDetailViewModel
