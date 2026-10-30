@@ -39,7 +39,7 @@ class LostReportRepository {
 
         val reportData = hashMapOf(
             "ownerUid" to user.uid,
-            "category" to category.trim(),
+            "category" to category.trim().lowercase(),
             "title" to description.trim(),
             "description" to description.trim(),
             "locationName" to locationName.trim(),

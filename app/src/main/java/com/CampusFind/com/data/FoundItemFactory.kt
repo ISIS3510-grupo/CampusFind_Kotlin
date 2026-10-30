@@ -16,7 +16,7 @@ object FoundItemFactory {
     ): Map<String, Any> {
         val item = mutableMapOf<String, Any>(
             "title" to title,
-            "category" to category,
+            "category" to category.trim().lowercase(),
             "publicDescription" to publicDescription,
             "locationName" to locationName,
             "status" to "available",
