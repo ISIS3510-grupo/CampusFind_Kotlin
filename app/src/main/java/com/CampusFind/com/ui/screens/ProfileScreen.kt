@@ -40,6 +40,9 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.YellowBadge
 import com.CampusFind.com.ui.theme.AnaheimFontFamily
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import com.CampusFind.com.model.LostReport
 import java.text.SimpleDateFormat
@@ -108,8 +111,13 @@ fun ProfileScreen(
             }
 
             Column(
-                modifier =
-                    Modifier.padding(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(
+                        rememberScrollState()
+                    )
+                    .padding(
                         24.dp
                     )
             ) {

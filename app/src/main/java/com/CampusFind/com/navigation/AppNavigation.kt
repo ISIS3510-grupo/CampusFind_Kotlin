@@ -44,7 +44,6 @@ import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
-import com.CampusFind.com.viewmodel.SmartMatchingViewModel
 import com.CampusFind.com.viewmodel.ReportLostItemViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 
