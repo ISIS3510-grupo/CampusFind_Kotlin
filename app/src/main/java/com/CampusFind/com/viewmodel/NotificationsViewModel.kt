@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import com.CampusFind.com.data.NotificationsDataSource
+import com.CampusFind.com.data.NotificationsRepository
 import com.CampusFind.com.model.AppNotification
 import com.google.firebase.firestore.ListenerRegistration
 
@@ -14,8 +14,8 @@ class NotificationsViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private val dataSource =
-        NotificationsDataSource()
+    private val repository =
+        NotificationsRepository()
 
     private val preferences =
         application.getSharedPreferences(
@@ -47,7 +47,7 @@ class NotificationsViewModel(
         errorMessage = null
 
         listener =
-            dataSource.observeNotifications(
+            repository.observeNotifications(
 
                 onUpdate = { result ->
 

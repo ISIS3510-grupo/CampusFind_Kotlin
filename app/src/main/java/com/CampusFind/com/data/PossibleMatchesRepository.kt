@@ -5,7 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
-class PossibleMatchesDataSource {
+class PossibleMatchesRepository {
 
     private val firestore =
         FirebaseFirestore.getInstance()
@@ -86,9 +86,8 @@ class PossibleMatchesDataSource {
                                     ) ?: "",
 
                                 strategyVersion =
-                                    document.getString(
-                                        "strategyVersion"
-                                    ) ?: "",
+                                    document.get("strategyVersion")
+                                        ?.toString() ?: "",
 
                                 createdAt =
                                     document.getTimestamp(
@@ -99,6 +98,49 @@ class PossibleMatchesDataSource {
                         ?: emptyList()
 
                 onUpdate(matches)
+            }
+    }
+    fun getFoundItemIdForMatch(
+        matchId: String,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val uid = auth.currentUser?.uid
+
+        if (uid == null) {
+            onError("User is not authenticated")
+            return
+        }
+
+        if (matchId.isBlank()) {
+            onError("Invalid match ID")
+            return
+        }
+
+        firestore.collection("matches")
+            .document(matchId)
+            .get()
+            .addOnSuccessListener { document ->
+
+                val foundItemId =
+                    document.getString("foundItemId")
+
+                if (
+                    !document.exists() ||
+                    document.getString("ownerUid") != uid ||
+                    foundItemId.isNullOrBlank()
+                ) {
+                    onError("Possible match not found")
+                    return@addOnSuccessListener
+                }
+
+                onSuccess(foundItemId)
+            }
+            .addOnFailureListener { exception ->
+                onError(
+                    exception.localizedMessage
+                        ?: "Error loading possible match"
+                )
             }
     }
 }

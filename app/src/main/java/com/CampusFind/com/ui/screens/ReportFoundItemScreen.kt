@@ -35,6 +35,8 @@ import android.util.Log
 @Composable
 fun ReportFoundItemScreen(
     suggestedLocation: String = "",
+    categories: List<String> = emptyList(),
+    locations: List<String> = emptyList(),
     onBack: () -> Unit = {},
     onContinue: () -> Unit = {},
     onCancel: () -> Unit = {},
@@ -91,9 +93,10 @@ fun ReportFoundItemScreen(
             text = "Category"
         )
 
-        CampusTextField(
+        CampusDropdownField(
             value = viewModel.category,
-            onValueChange = {
+            options = categories,
+            onSelected = {
                 viewModel.onCategoryChange(it)
             },
             placeholder = "Select category"
@@ -123,12 +126,13 @@ fun ReportFoundItemScreen(
             text = "Where did you find it?"
         )
 
-        CampusTextField(
+        CampusDropdownField(
             value = viewModel.location,
-            onValueChange = {
+            options = locations,
+            onSelected = {
                 viewModel.onLocationChange(it)
             },
-            placeholder = "Library · 3rd floor"
+            placeholder = "Select location"
         )
 
         Spacer(

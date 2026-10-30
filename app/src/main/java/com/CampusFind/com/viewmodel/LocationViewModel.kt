@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import com.CampusFind.com.data.OfficeLocationsDataSource
+import com.CampusFind.com.data.OfficeLocationRepository
 import com.CampusFind.com.model.LocationData
 import com.CampusFind.com.model.LocationPermissionStatus
 import com.CampusFind.com.service.CampusLocationService
@@ -18,8 +18,8 @@ class LocationViewModel(
     private val locationService =
         LocationService(application)
 
-    private val officeLocationsDataSource =
-        OfficeLocationsDataSource()
+    private val officeLocationRepository =
+        OfficeLocationRepository()
 
     private val campusLocationService =
         CampusLocationService()
@@ -109,7 +109,7 @@ class LocationViewModel(
         currentLocation: LocationData
     ) {
 
-        officeLocationsDataSource
+        officeLocationRepository
             .getActiveLocations(
 
                 onSuccess = { officeLocations ->

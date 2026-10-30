@@ -12,11 +12,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.CampusFind.com.model.FoundItemDetail
 import com.CampusFind.com.model.LostReport
+import com.CampusFind.com.ui.components.*
 import java.text.SimpleDateFormat
 import java.util.Locale
-import com.CampusFind.com.viewmodel.FoundItemDetail
-import com.CampusFind.com.ui.components.*
 
 @Composable
 fun LostReportDetailScreen(
