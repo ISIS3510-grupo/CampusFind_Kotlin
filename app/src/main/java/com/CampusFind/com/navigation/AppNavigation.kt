@@ -46,6 +46,8 @@ import com.CampusFind.com.viewmodel.NotificationsViewModel
 import com.CampusFind.com.viewmodel.ProfileViewModel
 import com.CampusFind.com.viewmodel.ReportLostItemViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
+import androidx.compose.runtime.DisposableEffect
+import com.CampusFind.com.service.ConnectivityObserver
 
 object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -105,6 +107,21 @@ fun AppNavigation(
     val context =
         LocalContext.current
 
+
+    val connectivityObserver = remember(context) {
+        ConnectivityObserver(context)
+    }
+
+
+    DisposableEffect(connectivityObserver) {
+        connectivityObserver.startListening()
+
+        onDispose {
+            connectivityObserver.stopListening()
+        }
+    }
+
+
     val notificationsViewModel:
             NotificationsViewModel =
         viewModel()
@@ -160,31 +177,31 @@ fun AppNavigation(
         }
     }
 
+
     LaunchedEffect(
-        notificationsViewModel
-            .latestNotification
-            ?.id
+        notificationsViewModel.latestNotification?.id,
+        connectivityObserver.isConnected
     ) {
+        if (!connectivityObserver.isConnected) {
+            return@LaunchedEffect
+        }
 
         val notification =
-            notificationsViewModel
-                .latestNotification
+            notificationsViewModel.latestNotification
                 ?: return@LaunchedEffect
 
         val wasShown =
-            matchNotificationService
-                .showSmartMatchNotification(
-                    notification
-                )
+            matchNotificationService.showSmartMatchNotification(
+                notification
+            )
 
         if (wasShown) {
-
-            notificationsViewModel
-                .markAsNotified(
-                    notification.id
-                )
+            notificationsViewModel.markAsNotified(
+                notification.id
+            )
         }
     }
+
 
     NavHost(
         navController = navController,
