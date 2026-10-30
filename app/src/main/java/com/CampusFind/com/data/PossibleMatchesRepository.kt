@@ -95,6 +95,9 @@ class PossibleMatchesRepository {
                                     )
                             )
                         }
+                        ?.sortedByDescending {
+                            it.score
+                        }
                         ?: emptyList()
 
                 onUpdate(matches)
