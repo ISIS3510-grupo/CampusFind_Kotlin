@@ -124,15 +124,11 @@ fun DropOffInstructionsScreen(
                 ) {
 
                     Spacer(
-                        modifier =
-                            Modifier.height(
-                                8.dp
-                            )
+                        modifier = Modifier.height(6.dp)
                     )
 
                     Text(
-                        text =
-                            office.address,
+                        text = office.address.ifBlank { "Cra. 1 #18A-12" },
                         fontSize = 14.sp
                     )
                 }

@@ -1,16 +1,22 @@
 package com.CampusFind.com.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import com.CampusFind.com.data.OfficeLocationCache
 import com.CampusFind.com.data.OfficeLocationRepository
 import com.CampusFind.com.model.OfficeLocation
 
-class DropOffInstructionsViewModel : ViewModel() {
+class DropOffInstructionsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
 
     private val repository =
-        OfficeLocationRepository()
+        OfficeLocationRepository(
+            OfficeLocationCache(application)
+        )
 
     var office by mutableStateOf<OfficeLocation?>(null)
         private set
@@ -23,19 +29,15 @@ class DropOffInstructionsViewModel : ViewModel() {
 
     fun loadOffice() {
 
-        if (isLoading) {
-            return
-        }
+        if (isLoading) return
 
         isLoading = true
         errorMessage = null
 
         repository.getOfficeLocation(
-
             officeId = "ml",
 
             onSuccess = { result ->
-
                 office = result
                 isLoading = false
 
@@ -46,7 +48,6 @@ class DropOffInstructionsViewModel : ViewModel() {
             },
 
             onError = { error ->
-
                 isLoading = false
                 errorMessage = error
             }
