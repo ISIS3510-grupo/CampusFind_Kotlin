@@ -8,6 +8,8 @@ import androidx.lifecycle.AndroidViewModel
 import com.CampusFind.com.data.OfficeLocationCache
 import com.CampusFind.com.data.OfficeLocationRepository
 import com.CampusFind.com.model.OfficeLocation
+import com.CampusFind.com.service.ConnectivityObserver
+
 
 class DropOffInstructionsViewModel(
     application: Application
@@ -27,6 +29,28 @@ class DropOffInstructionsViewModel(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    var isConnected by mutableStateOf(true)
+        private set
+
+    private var wasDisconnected = false
+
+    private val connectivityObserver =
+        ConnectivityObserver(application) { connected ->
+
+            isConnected = connected
+
+            if (!connected) {
+                wasDisconnected = true
+            } else if (wasDisconnected) {
+                wasDisconnected = false
+                loadOffice()
+            }
+        }
+
+    init {
+        connectivityObserver.startListening()
+    }
+
     fun loadOffice() {
 
         if (isLoading) return
@@ -34,8 +58,7 @@ class DropOffInstructionsViewModel(
         isLoading = true
         errorMessage = null
 
-        repository.getOfficeLocation(
-            officeId = "ml",
+        repository.getOfficeLocation(officeId = "ml",
 
             onSuccess = { result ->
                 office = result
@@ -52,5 +75,9 @@ class DropOffInstructionsViewModel(
                 errorMessage = error
             }
         )
+    }
+    override fun onCleared() {
+        connectivityObserver.stopListening()
+        super.onCleared()
     }
 }
