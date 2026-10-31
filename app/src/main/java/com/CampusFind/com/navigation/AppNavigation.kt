@@ -25,7 +25,6 @@ import com.CampusFind.com.ui.screens.AdminLostReportsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
-import com.CampusFind.com.ui.screens.AdminReportBottleneckScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
 import com.CampusFind.com.ui.screens.BiometricVerificationScreen
 import com.CampusFind.com.ui.screens.DonationPotentialScreen
@@ -63,7 +62,6 @@ object Routes {
     const val LOST_REPORT_DETAIL = "lost_report_detail/{reportId}"
     const val MATCH_ALERT = "match_alert/{matchId}"
     const val REPORT_FOUND = "report_found"
-    const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
     const val HOME = "home"
     const val BIOMETRIC_VERIFY = "biometric_verify/{matchId}"
     const val DROP_OFF = "drop_off"
@@ -331,15 +329,11 @@ fun AppNavigation(
                 onReviewClaims = {
                     navController.navigate(Routes.ADMIN_CLAIMS)
                 },
+
                 onOwnershipRates = {
                     navController.navigate(Routes.ADMIN_OWNERSHIP)
                 },
 
-                onReportBottleneck = {
-                    navController.navigate(
-                        Routes.ADMIN_REPORT_BOTTLENECK
-                    )
-                },
                 onMatchSearchTime = {
                     navController.navigate(
                         Routes.ADMIN_MATCH_SEARCH_TIME
@@ -384,18 +378,6 @@ fun AppNavigation(
             AdminClaimsScreen(
                 onBack = {
                     navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            Routes.ADMIN_REPORT_BOTTLENECK
-        ) {
-
-            AdminReportBottleneckScreen(
-                onBack = {
-                    navController
-                        .popBackStack()
                 }
             )
         }

@@ -23,6 +23,8 @@ import com.CampusFind.com.service.GoogleMapsAdapter
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.viewmodel.DropOffInstructionsViewModel
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun DropOffInstructionsScreen(
@@ -62,6 +64,33 @@ fun DropOffInstructionsScreen(
                 "Found item report registered successfully.",
             onBack = onBack
         )
+
+        if (!dropOffViewModel.isConnected) {
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = Color(0xFFFFEBEE),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFFD32F2F),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text =
+                        "No internet connection. Showing saved drop-off information.",
+                    color = Color(0xFFB71C1C),
+                    fontSize = 14.sp
+                )
+            }
+        }
 
         Spacer(
             modifier =
@@ -118,24 +147,14 @@ fun DropOffInstructionsScreen(
                     fontSize = 16.sp
                 )
 
-                if (
-                    office.address
-                        .isNotBlank()
-                ) {
+                Spacer(
+                    modifier = Modifier.height(6.dp)
+                )
 
-                    Spacer(
-                        modifier =
-                            Modifier.height(
-                                8.dp
-                            )
-                    )
-
-                    Text(
-                        text =
-                            office.address,
-                        fontSize = 14.sp
-                    )
-                }
+                Text(
+                    text = office.address.ifBlank { "Cra. 1 #18A-12" },
+                    fontSize = 14.sp
+                )
             }
 
             Spacer(
