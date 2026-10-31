@@ -67,7 +67,7 @@ class ConnectivityObserver(
     }
 
     private fun updateConnection() {
-        handler.post {
+        val checkConnection = Runnable {
             if (isListening) {
                 val connected = hasInternetConnection()
                 if (isConnected != connected) {
@@ -76,6 +76,9 @@ class ConnectivityObserver(
                 }
             }
         }
+        handler.post(checkConnection)
+        handler.postDelayed(checkConnection, 500L)
+        handler.postDelayed(checkConnection, 2000L)
     }
 
     private fun hasInternetConnection(): Boolean {
