@@ -47,6 +47,7 @@ import com.CampusFind.com.ui.theme.AnaheimFontFamily
 fun AdminHomeScreen(
     email: String,
     onRegisterFound: () -> Unit,
+    onSearchRecords: () -> Unit,
     onReportTimes: () -> Unit,
     onMatchSearchTime: () -> Unit,
     onDonationPotential: () -> Unit,
@@ -186,7 +187,7 @@ fun AdminHomeScreen(
 
                 SecondaryButton(
                     text = "Search lost & found records",
-                    onClick = {}
+                    onClick = onSearchRecords
                 )
 
                 SecondaryButton(

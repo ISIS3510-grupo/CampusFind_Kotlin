@@ -21,6 +21,7 @@ import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
+import com.CampusFind.com.ui.screens.AdminLostReportsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
@@ -50,6 +51,7 @@ import androidx.compose.runtime.DisposableEffect
 import com.CampusFind.com.service.ConnectivityObserver
 
 object Routes {
+    const val ADMIN_LOST_REPORTS = "admin_lost_reports"
     const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
@@ -63,7 +65,7 @@ object Routes {
     const val REPORT_FOUND = "report_found"
     const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
     const val HOME = "home"
-    const val BIOMETRIC_VERIFY = "biometric_verify"
+    const val BIOMETRIC_VERIFY = "biometric_verify/{matchId}"
     const val DROP_OFF = "drop_off"
     const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
 
@@ -72,6 +74,10 @@ object Routes {
     ): String {
         return "lost_report_detail/$reportId"
     }
+    fun biometricVerify(matchId: String): String {
+        return "biometric_verify/${android.net.Uri.encode(matchId)}"
+    }
+
     fun matchAlert(matchId: String): String {
         return "match_alert/${android.net.Uri.encode(matchId)}"
     }
@@ -306,6 +312,10 @@ fun AppNavigation(
                     )
                 },
 
+                onSearchRecords = {
+                    navController.navigate(Routes.ADMIN_LOST_REPORTS)
+                },
+
                 onReportTimes = {
                     navController.navigate(
                         Routes.ADMIN_REPORT_TIMES
@@ -354,6 +364,12 @@ fun AppNavigation(
             )
 
 
+        }
+
+        composable(Routes.ADMIN_LOST_REPORTS) {
+            AdminLostReportsScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.ADMIN_OWNERSHIP) {
@@ -713,7 +729,7 @@ fun AppNavigation(
 
                 onReviewMatch = {
                     navController.navigate(
-                        Routes.BIOMETRIC_VERIFY
+                        Routes.biometricVerify(matchId)
                     )
                 },
 
@@ -724,13 +740,23 @@ fun AppNavigation(
         }
 
         composable(
-            Routes.BIOMETRIC_VERIFY
-        ) {
+            route = Routes.BIOMETRIC_VERIFY,
+            arguments = listOf(
+                navArgument("matchId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
 
             BiometricVerificationScreen(
+                matchId = matchId,
                 onBack = {
-                    navController
-                        .popBackStack()
+                    navController.popBackStack()
+                },
+                onClaimSubmitted = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
