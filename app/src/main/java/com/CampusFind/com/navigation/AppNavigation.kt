@@ -1,6 +1,7 @@
 package com.CampusFind.com.navigation
 
 import android.Manifest
+import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -10,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,15 +20,16 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
-import com.CampusFind.com.ui.screens.AdminReportBottleneckScreen
-import com.CampusFind.com.ui.screens.BiometricVerificationScreen
-import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
-import com.CampusFind.com.ui.screens.HomeScreen
-
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
+import com.CampusFind.com.ui.screens.AdminLostReportsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
+import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
+import com.CampusFind.com.ui.screens.BiometricVerificationScreen
+import com.CampusFind.com.ui.screens.DonationPotentialScreen
+import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
+import com.CampusFind.com.ui.screens.HomeScreen
 import com.CampusFind.com.ui.screens.LoginScreen
 import com.CampusFind.com.ui.screens.LostReportDetailScreen
 import com.CampusFind.com.ui.screens.MatchAlertScreen
@@ -34,19 +37,20 @@ import com.CampusFind.com.ui.screens.ProfileScreen
 import com.CampusFind.com.ui.screens.ReportFoundItemScreen
 import com.CampusFind.com.ui.screens.ReportLostItemScreen
 import com.CampusFind.com.viewmodel.AuthenticationViewModel
+import com.CampusFind.com.viewmodel.DonationPotentialViewModel
+import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
 import com.CampusFind.com.viewmodel.LocationViewModel
+import com.CampusFind.com.viewmodel.LostReportDetailViewModel
 import com.CampusFind.com.viewmodel.LostReportsViewModel
 import com.CampusFind.com.viewmodel.NotificationsViewModel
-
 import com.CampusFind.com.viewmodel.ProfileViewModel
-import com.CampusFind.com.viewmodel.LostReportDetailViewModel
-import com.CampusFind.com.viewmodel.FoundItemDetailViewModel
-import com.CampusFind.com.ui.screens.DonationPotentialScreen
-import com.CampusFind.com.viewmodel.DonationPotentialViewModel
-import com.CampusFind.com.viewmodel.SmartMatchingViewModel
-import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
+import com.CampusFind.com.viewmodel.ReportLostItemViewModel
+import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
+import androidx.compose.runtime.DisposableEffect
+import com.CampusFind.com.service.ConnectivityObserver
 
 object Routes {
+    const val ADMIN_LOST_REPORTS = "admin_lost_reports"
     const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
@@ -56,11 +60,10 @@ object Routes {
     const val REPORT_LOST = "report_lost"
     const val DONATION_POTENTIAL = "donation_potential"
     const val LOST_REPORT_DETAIL = "lost_report_detail/{reportId}"
-    const val MATCH_ALERT = "match_alert"
+    const val MATCH_ALERT = "match_alert/{matchId}"
     const val REPORT_FOUND = "report_found"
-    const val ADMIN_REPORT_BOTTLENECK = "admin_report_bottleneck"
     const val HOME = "home"
-    const val BIOMETRIC_VERIFY = "biometric_verify"
+    const val BIOMETRIC_VERIFY = "biometric_verify/{matchId}"
     const val DROP_OFF = "drop_off"
     const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
 
@@ -68,6 +71,13 @@ object Routes {
         reportId: String
     ): String {
         return "lost_report_detail/$reportId"
+    }
+    fun biometricVerify(matchId: String): String {
+        return "biometric_verify/${android.net.Uri.encode(matchId)}"
+    }
+
+    fun matchAlert(matchId: String): String {
+        return "match_alert/${android.net.Uri.encode(matchId)}"
     }
 }
 
@@ -89,7 +99,7 @@ fun AppNavigation(
         ) {
 
             navController.navigate(
-                Routes.MATCH_ALERT
+                Routes.matchAlert(notificationMatchId)
             ) {
                 launchSingleTop = true
             }
@@ -100,6 +110,21 @@ fun AppNavigation(
 
     val context =
         LocalContext.current
+
+
+    val connectivityObserver = remember(context) {
+        ConnectivityObserver(context)
+    }
+
+
+    DisposableEffect(connectivityObserver) {
+        connectivityObserver.startListening()
+
+        onDispose {
+            connectivityObserver.stopListening()
+        }
+    }
+
 
     val notificationsViewModel:
             NotificationsViewModel =
@@ -156,31 +181,31 @@ fun AppNavigation(
         }
     }
 
+
     LaunchedEffect(
-        notificationsViewModel
-            .latestNotification
-            ?.id
+        notificationsViewModel.latestNotification?.id,
+        connectivityObserver.isConnected
     ) {
+        if (!connectivityObserver.isConnected) {
+            return@LaunchedEffect
+        }
 
         val notification =
-            notificationsViewModel
-                .latestNotification
+            notificationsViewModel.latestNotification
                 ?: return@LaunchedEffect
 
         val wasShown =
-            matchNotificationService
-                .showSmartMatchNotification(
-                    notification
-                )
+            matchNotificationService.showSmartMatchNotification(
+                notification
+            )
 
         if (wasShown) {
-
-            notificationsViewModel
-                .markAsNotified(
-                    notification.id
-                )
+            notificationsViewModel.markAsNotified(
+                notification.id
+            )
         }
     }
+
 
     NavHost(
         navController = navController,
@@ -285,6 +310,10 @@ fun AppNavigation(
                     )
                 },
 
+                onSearchRecords = {
+                    navController.navigate(Routes.ADMIN_LOST_REPORTS)
+                },
+
                 onReportTimes = {
                     navController.navigate(
                         Routes.ADMIN_REPORT_TIMES
@@ -300,15 +329,11 @@ fun AppNavigation(
                 onReviewClaims = {
                     navController.navigate(Routes.ADMIN_CLAIMS)
                 },
+
                 onOwnershipRates = {
                     navController.navigate(Routes.ADMIN_OWNERSHIP)
                 },
 
-                onReportBottleneck = {
-                    navController.navigate(
-                        Routes.ADMIN_REPORT_BOTTLENECK
-                    )
-                },
                 onMatchSearchTime = {
                     navController.navigate(
                         Routes.ADMIN_MATCH_SEARCH_TIME
@@ -335,6 +360,12 @@ fun AppNavigation(
 
         }
 
+        composable(Routes.ADMIN_LOST_REPORTS) {
+            AdminLostReportsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         composable(Routes.ADMIN_OWNERSHIP) {
             AdminOwnershipScreen(
                 onBack = {
@@ -347,18 +378,6 @@ fun AppNavigation(
             AdminClaimsScreen(
                 onBack = {
                     navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            Routes.ADMIN_REPORT_BOTTLENECK
-        ) {
-
-            AdminReportBottleneckScreen(
-                onBack = {
-                    navController
-                        .popBackStack()
                 }
             )
         }
@@ -471,6 +490,10 @@ fun AppNavigation(
                     LocationViewModel =
                 viewModel()
 
+            val reportLostItemViewModel:
+                    ReportLostItemViewModel =
+                viewModel()
+
             val requestLocationPermission =
                 rememberLocationPermissionLauncher { status ->
 
@@ -482,6 +505,8 @@ fun AppNavigation(
 
             LaunchedEffect(Unit) {
                 requestLocationPermission()
+                reportLostItemViewModel.loadCategories()
+                reportLostItemViewModel.loadLocations()
             }
 
             val suggestedLocation =
@@ -492,6 +517,10 @@ fun AppNavigation(
                 suggestedLocation =
                     suggestedLocation,
 
+                locations = reportLostItemViewModel.locations,
+                errorMessage = reportLostItemViewModel.errorMessage,
+                isSaving = reportLostItemViewModel.isSaving,
+
                 locationError =
                     locationViewModel
                         .errorMessage,
@@ -500,14 +529,26 @@ fun AppNavigation(
                     locationViewModel
                         .isLoading,
 
+                categories =
+                    reportLostItemViewModel.categories,
+
                 onBack = {
                     navController
                         .popBackStack()
                 },
 
-                onSubmit = {
-                    navController
-                        .popBackStack()
+                onSubmit = { category, description, locationName, privateDetail ->
+
+                    reportLostItemViewModel.submitReport(
+                        category = category,
+                        description = description,
+                        locationName = locationName,
+                        privateDetail = privateDetail,
+
+                        onSuccess = {
+                            navController.popBackStack()
+                        }
+                    )
                 }
             )
         }
@@ -536,14 +577,18 @@ fun AppNavigation(
 
             val foundItemDetailViewModel:
                     FoundItemDetailViewModel =
-                viewModel()
+                viewModel(
+                    factory = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                        context.applicationContext as Application
+                    )
+                )
 
             val lostReportDetailViewModel:
                     LostReportDetailViewModel =
                 viewModel()
 
-            val smartMatchingViewModel:
-                    SmartMatchingViewModel =
+            val possibleMatchesViewModel:
+                    PossibleMatchesViewModel =
                 viewModel()
 
             LaunchedEffect(
@@ -554,38 +599,24 @@ fun AppNavigation(
                     .loadReport(
                         reportId
                     )
-            }
-
-            LaunchedEffect(
-                lostReportDetailViewModel
-                    .report
-                    ?.id
-            ) {
-
-                val report =
-                    lostReportDetailViewModel
-                        .report
-                        ?: return@LaunchedEffect
-
-                smartMatchingViewModel
-                    .generateMatches(
-                        report
+                possibleMatchesViewModel
+                    .observeMatches(
+                        reportId
                     )
             }
 
             LaunchedEffect(
-                smartMatchingViewModel
+                possibleMatchesViewModel
                     .matches
                     .firstOrNull()
-                    ?.foundItem
-                    ?.id
+                    ?.foundItemId
             ) {
+
                 val foundItemId =
-                    smartMatchingViewModel
+                    possibleMatchesViewModel
                         .matches
                         .firstOrNull()
-                        ?.foundItem
-                        ?.id
+                        ?.foundItemId
                         ?: return@LaunchedEffect
 
                 foundItemDetailViewModel
@@ -604,9 +635,8 @@ fun AppNavigation(
                         .foundItem,
 
                 matchCount =
-                    smartMatchingViewModel
-                        .matches
-                        .size,
+                    possibleMatchesViewModel
+                        .matchCount,
 
                 onBack = {
                     navController
@@ -614,9 +644,14 @@ fun AppNavigation(
                 },
 
                 onMatchClick = {
-                    navController.navigate(
-                        Routes.MATCH_ALERT
-                    )
+                    possibleMatchesViewModel.matches
+                        .firstOrNull()
+                        ?.id
+                        ?.let { matchId ->
+                            navController.navigate(
+                                Routes.matchAlert(matchId)
+                            )
+                        }
                 },
 
                 onRecoveredElsewhere = {
@@ -627,36 +662,83 @@ fun AppNavigation(
         }
 
         composable(
-            Routes.MATCH_ALERT
-        ) {
+            route = Routes.MATCH_ALERT,
+            arguments = listOf(
+                navArgument("matchId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+
+            val matchId = backStackEntry
+                .arguments
+                ?.getString("matchId")
+                ?: ""
+
+            val possibleMatchesViewModel:
+                    PossibleMatchesViewModel = viewModel()
+
+            val foundItemDetailViewModel:
+                    FoundItemDetailViewModel = viewModel(
+                factory = ViewModelProvider.AndroidViewModelFactory
+                    .getInstance(
+                        context.applicationContext as Application
+                    )
+            )
+
+            LaunchedEffect(matchId) {
+                possibleMatchesViewModel.loadMatch(matchId)
+            }
+
+            LaunchedEffect(
+                possibleMatchesViewModel.selectedFoundItemId
+            ) {
+                possibleMatchesViewModel.selectedFoundItemId
+                    ?.let { foundItemId ->
+                        foundItemDetailViewModel.loadFoundItem(
+                            foundItemId
+                        )
+                    }
+            }
 
             MatchAlertScreen(
+                foundItem = foundItemDetailViewModel.foundItem,
+                errorMessage = possibleMatchesViewModel.selectedMatchError,
+
                 onBack = {
-                    navController
-                        .navigateUp()
+                    navController.navigateUp()
                 },
 
                 onReviewMatch = {
                     navController.navigate(
-                        Routes.BIOMETRIC_VERIFY
+                        Routes.biometricVerify(matchId)
                     )
                 },
 
                 onNotMine = {
-                    navController
-                        .popBackStack()
+                    navController.popBackStack()
                 }
             )
         }
 
         composable(
-            Routes.BIOMETRIC_VERIFY
-        ) {
+            route = Routes.BIOMETRIC_VERIFY,
+            arguments = listOf(
+                navArgument("matchId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
 
             BiometricVerificationScreen(
+                matchId = matchId,
                 onBack = {
-                    navController
-                        .popBackStack()
+                    navController.popBackStack()
+                },
+                onClaimSubmitted = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -664,8 +746,18 @@ fun AppNavigation(
         composable(
             Routes.REPORT_FOUND
         ) {
+            val optionsViewModel: ReportLostItemViewModel = viewModel()
+
+            LaunchedEffect(Unit) {
+                optionsViewModel.loadCategories()
+                optionsViewModel.loadLocations()
+            }
 
             ReportFoundItemScreen(
+
+                categories = optionsViewModel.categories,
+                locations = optionsViewModel.locations,
+
                 onBack = {
                     navController
                         .popBackStack()

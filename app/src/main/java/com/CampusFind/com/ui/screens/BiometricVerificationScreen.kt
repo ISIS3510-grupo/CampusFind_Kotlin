@@ -2,6 +2,8 @@ package com.CampusFind.com.ui.screens
 
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +12,8 @@ import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,14 +33,26 @@ import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.ui.components.SecondaryButton
 import com.CampusFind.com.ui.components.YellowBadge
 import com.CampusFind.com.viewmodel.BiometricVerificationViewModel
+import com.CampusFind.com.viewmodel.ClaimSubmissionViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun BiometricVerificationScreen(
+    matchId: String,
+    onClaimSubmitted: () -> Unit,
     onBack: () -> Unit = {},
     biometricViewModel:
     BiometricVerificationViewModel =
-        viewModel()
+        viewModel(),
+    claimSubmissionViewModel: ClaimSubmissionViewModel = viewModel()
 ) {
+
+    LaunchedEffect(claimSubmissionViewModel.isSubmitted) {
+        if (claimSubmissionViewModel.isSubmitted) {
+            delay(1000)
+            onClaimSubmitted()
+        }
+    }
 
     val context =
         LocalContext.current
@@ -71,6 +87,8 @@ fun BiometricVerificationScreen(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
+            .imePadding()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
 
@@ -164,6 +182,45 @@ fun BiometricVerificationScreen(
                     "Biometric verification completed. The claim flow is now unlocked.",
                 fontSize = 16.sp
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = claimSubmissionViewModel.ownershipAnswer,
+                onValueChange = claimSubmissionViewModel::updateOwnershipAnswer,
+                label = {
+                    Text("Describe private details of the item (marks, contents, serial number)")
+                },
+                singleLine = false,
+                minLines = 3,
+                enabled = !claimSubmissionViewModel.isSending && !claimSubmissionViewModel.isSubmitted,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    if (biometricViewModel.isVerified) {
+                        claimSubmissionViewModel.submitClaim(matchId)
+                    }
+                },
+                enabled = claimSubmissionViewModel.ownershipAnswer.isNotBlank() &&
+                    !claimSubmissionViewModel.isSending && !claimSubmissionViewModel.isSubmitted,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(if (claimSubmissionViewModel.isSending) "Submitting..." else "Submit claim")
+            }
+
+            claimSubmissionViewModel.errorMessage?.let { error ->
+                Text(error, color = MaterialTheme.colorScheme.error)
+            }
+
+            if (claimSubmissionViewModel.isSubmitted) {
+                Text("Claim submitted successfully.", fontWeight = FontWeight.Medium)
+            }
 
         } else {
 

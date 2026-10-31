@@ -47,12 +47,12 @@ import com.CampusFind.com.ui.theme.AnaheimFontFamily
 fun AdminHomeScreen(
     email: String,
     onRegisterFound: () -> Unit,
+    onSearchRecords: () -> Unit,
     onReportTimes: () -> Unit,
     onMatchSearchTime: () -> Unit,
     onDonationPotential: () -> Unit,
     onReviewClaims: () -> Unit,
     onOwnershipRates: () -> Unit,
-    onReportBottleneck: () -> Unit,
     onLogout: () -> Unit
 ) {
     Column(
@@ -186,7 +186,7 @@ fun AdminHomeScreen(
 
                 SecondaryButton(
                     text = "Search lost & found records",
-                    onClick = {}
+                    onClick = onSearchRecords
                 )
 
                 SecondaryButton(
@@ -212,11 +212,6 @@ fun AdminHomeScreen(
                 SecondaryButton(
                     text = "Verification rate",
                     onClick = onOwnershipRates
-                )
-
-                SecondaryButton(
-                    text = "Report bottleneck",
-                    onClick = onReportBottleneck
                 )
             }
 

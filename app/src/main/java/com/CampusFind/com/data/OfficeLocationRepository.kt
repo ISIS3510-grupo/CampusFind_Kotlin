@@ -3,17 +3,17 @@ package com.CampusFind.com.data
 import com.CampusFind.com.model.OfficeLocation
 import com.google.firebase.firestore.FirebaseFirestore
 
-class OfficeLocationRepository {
+class OfficeLocationRepository(
+    private val cache: OfficeLocationCache? = null
+) {
 
-    private val firestore =
-        FirebaseFirestore.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
 
     fun getOfficeLocation(
         officeId: String = "ml",
         onSuccess: (OfficeLocation?) -> Unit,
         onError: (String) -> Unit
     ) {
-
         firestore
             .collection("officeLocations")
             .document(officeId)
@@ -21,29 +21,18 @@ class OfficeLocationRepository {
             .addOnSuccessListener { document ->
 
                 if (!document.exists()) {
-
                     onSuccess(null)
-
                     return@addOnSuccessListener
                 }
 
                 val latitude =
-                    (document.get("latitude") as? Number)
-                        ?.toDouble()
+                    (document.get("latitude") as? Number)?.toDouble()
 
                 val longitude =
-                    (document.get("longitude") as? Number)
-                        ?.toDouble()
+                    (document.get("longitude") as? Number)?.toDouble()
 
-                if (
-                    latitude == null ||
-                    longitude == null
-                ) {
-
-                    onError(
-                        "Office coordinates are not available."
-                    )
-
+                if (latitude == null || longitude == null) {
+                    onError("Office coordinates are not available.")
                     return@addOnSuccessListener
                 }
 
@@ -52,43 +41,81 @@ class OfficeLocationRepository {
                         ?.toDouble()
                         ?: 120.0
 
-                val office =
-                    OfficeLocation(
-                        id = document.id,
-
-                        name =
-                            document.getString("name")
-                                ?: "Lost & Found Office",
-
-                        code =
-                            document.getString("code")
-                                ?: "",
-
-                        address =
-                            document.getString("address")
-                                ?: "",
-
-                        latitude = latitude,
-
-                        longitude = longitude,
-
-                        radiusMeters =
-                            radiusMeters,
-
-                        active =
-                            document.getBoolean("active")
-                                ?: true
-                    )
-
-                onSuccess(
-                    office
+                val office = OfficeLocation(
+                    id = document.id,
+                    name = document.getString("name") ?: "Lost & Found Office",
+                    code = document.getString("code") ?: "",
+                    address = document.getString("address") ?: "",
+                    latitude = latitude,
+                    longitude = longitude,
+                    radiusMeters = radiusMeters,
+                    active = document.getBoolean("active") ?: true
                 )
+
+                cache?.saveOffice(office)
+
+                onSuccess(office)
             }
             .addOnFailureListener { exception ->
 
+                val cachedOffice = cache?.getOffice()
+
+                if (cachedOffice != null) {
+                    onSuccess(cachedOffice)
+                } else {
+                    onError(
+                        exception.localizedMessage
+                            ?: "Unable to load office information."
+                    )
+                }
+            }
+    }
+
+    fun getActiveLocations(
+        onSuccess: (List<OfficeLocation>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        firestore
+            .collection("officeLocations")
+            .whereEqualTo("active", true)
+            .get()
+            .addOnSuccessListener { snapshot ->
+
+                val locations =
+                    snapshot.documents.mapNotNull { document ->
+
+                        val latitude =
+                            (document.get("latitude") as? Number)
+                                ?.toDouble()
+                                ?: return@mapNotNull null
+
+                        val longitude =
+                            (document.get("longitude") as? Number)
+                                ?.toDouble()
+                                ?: return@mapNotNull null
+
+                        val radiusMeters =
+                            (document.get("radiusMeters") as? Number)
+                                ?.toDouble()
+                                ?: 120.0
+
+                        OfficeLocation(
+                            id = document.id,
+                            name = document.getString("name") ?: "",
+                            code = document.getString("code") ?: "",
+                            latitude = latitude,
+                            longitude = longitude,
+                            radiusMeters = radiusMeters,
+                            active = document.getBoolean("active") ?: true
+                        )
+                    }
+
+                onSuccess(locations)
+            }
+            .addOnFailureListener { exception ->
                 onError(
-                    exception.localizedMessage
-                        ?: "Unable to load office information."
+                    exception.message
+                        ?: "Error loading campus locations"
                 )
             }
     }

@@ -4,12 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.FirebaseFirestore
+import com.CampusFind.com.data.UserRepository
 
 class ProfileViewModel : ViewModel() {
 
-    private val firestore =
-        FirebaseFirestore.getInstance()
+    private val repository = UserRepository()
 
     var displayName by mutableStateOf("")
         private set
@@ -24,19 +23,9 @@ class ProfileViewModel : ViewModel() {
             return
         }
 
-        firestore
-            .collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener { document ->
-
-                displayName =
-                    document.getString("displayName")
-                        ?: ""
-
-                role =
-                    document.getString("role")
-                        ?: ""
-            }
+        repository.getUser(uid) { user ->
+            displayName = user.displayName
+            role = user.role
+        }
     }
 }

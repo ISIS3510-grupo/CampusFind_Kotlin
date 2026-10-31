@@ -2,19 +2,27 @@ package com.CampusFind.com.data
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import com.CampusFind.com.model.FoundItemDetail
 import com.CampusFind.com.service.ConnectivityObserver
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import org.json.JSONObject
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 class FoundItemRepository private constructor(private val context: Context) {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private val offlineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private var isSaving = false
     private var isSendingPending = false
@@ -25,6 +33,29 @@ class FoundItemRepository private constructor(private val context: Context) {
 
     init {
         connectivityObserver.startListening()
+    }
+
+    fun getFoundItem(foundItemId: String, onSuccess: (FoundItemDetail) -> Unit) {
+        firestore
+            .collection("foundItems")
+            .document(foundItemId)
+            .get()
+            .addOnSuccessListener { document ->
+
+                onSuccess(
+                    FoundItemDetail(
+                        id = document.id,
+                        title =
+                            document.getString("title")
+                                ?: "",
+                        locationName =
+                            document.getString("locationName")
+                                ?: "",
+                        createdAt =
+                            document.getTimestamp("createdAt")
+                    )
+                )
+            }
     }
 
     fun createId(): String {
@@ -43,20 +74,30 @@ class FoundItemRepository private constructor(private val context: Context) {
         onError: (String) -> Unit
     ) {
         val user = firebaseAuth.currentUser
-        if (user == null) {
-            onError("Please sign in before registering an item.")
-            return
+        offlineScope.launch {
+            val error = if (user == null) {
+                "Please sign in before registering an item."
+            } else {
+                try {
+                    Log.d("Hilos", "Guardar: ${Thread.currentThread().name}")
+                    PendingFoundItemStore(context, user.uid).save(
+                        id, title, category, publicDescription, locationName, photoUri, privateCharacteristics
+                    )
+                    null
+                } catch (exception: Exception) {
+                    exception.localizedMessage ?: "Unable to save item offline."
+                }
+            }
+            withContext(Dispatchers.Main) {
+                Log.d("Hilos", "Avisar: ${Thread.currentThread().name}")
+                if (error != null) {
+                    onError(error)
+                } else {
+                    onSuccess()
+                    if (connectivityObserver.isConnected) sendPendingItems()
+                }
+            }
         }
-        try {
-            PendingFoundItemStore(context, user.uid).save(
-                id, title, category, publicDescription, locationName, photoUri, privateCharacteristics
-            )
-        } catch (exception: Exception) {
-            onError(exception.localizedMessage ?: "Unable to save item offline.")
-            return
-        }
-        onSuccess()
-        if (connectivityObserver.isConnected) sendPendingItems()
     }
 
     fun sendPendingItems() {
