@@ -186,11 +186,6 @@ fun AdminHomeScreen(
                 )
 
                 SecondaryButton(
-                    text = "Search lost & found records",
-                    onClick = onSearchRecords
-                )
-
-                SecondaryButton(
                     text = "Average time to found",
                     onClick = onReportTimes
                 )
@@ -301,7 +296,7 @@ fun AdminHomeScreen(
                 icon = Icons.Default.Search,
                 label = "Search",
                 selected = false,
-                onClick = {}
+                onClick = onSearchRecords
             )
 
             AdminBottomNavItem(

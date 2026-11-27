@@ -49,9 +49,11 @@ import com.CampusFind.com.viewmodel.ReportLostItemViewModel
 import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import androidx.compose.runtime.DisposableEffect
 import com.CampusFind.com.service.ConnectivityObserver
+import com.CampusFind.com.ui.screens.AdminFoundInventoryScreen
 
 object Routes {
     const val ADMIN_LOST_REPORTS = "admin_lost_reports"
+    const val ADMIN_FOUND_INVENTORY = "admin_found_inventory"
     const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
@@ -68,6 +70,7 @@ object Routes {
     const val BIOMETRIC_VERIFY = "biometric_verify/{matchId}"
     const val DROP_OFF = "drop_off"
     const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
+
 
     fun lostReportDetail(
         reportId: String
@@ -313,7 +316,7 @@ fun AppNavigation(
                 },
 
                 onSearchRecords = {
-                    navController.navigate(Routes.ADMIN_LOST_REPORTS)
+                    navController.navigate(Routes.ADMIN_FOUND_INVENTORY)
                 },
 
                 onReportTimes = {
@@ -371,6 +374,37 @@ fun AppNavigation(
         composable(Routes.ADMIN_LOST_REPORTS) {
             AdminLostReportsScreen(
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.ADMIN_FOUND_INVENTORY) {
+            AdminFoundInventoryScreen(
+                isConnected = connectivityObserver.isConnected,
+
+                onBack = {
+                    navController.popBackStack()
+                },
+
+                onLostReports = {
+                    navController.navigate(Routes.ADMIN_LOST_REPORTS)
+                },
+
+                onDashboard = {
+                    navController.navigate(Routes.ADMIN_HOME) {
+                        launchSingleTop = true
+                        popUpTo(Routes.ADMIN_HOME) {
+                            inclusive = false
+                        }
+                    }
+                },
+
+                onRegister = {
+                    navController.navigate(Routes.REPORT_FOUND)
+                },
+
+                onClaims = {
+                    navController.navigate(Routes.ADMIN_CLAIMS)
+                }
             )
         }
 
