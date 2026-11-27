@@ -239,6 +239,7 @@ fun AppNavigation(
                         }
                     }
                 },
+                isConnected = connectivityObserver.isConnected,
 
                 onStaffLogin = {
 

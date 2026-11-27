@@ -28,6 +28,7 @@ import com.CampusFind.com.viewmodel.AuthenticationViewModel
 
 @Composable
 fun LoginScreen(
+    isConnected: Boolean,
     onStudentLogin: () -> Unit = {},
     onStaffLogin: () -> Unit = {},
     authenticationViewModel: AuthenticationViewModel = viewModel()
@@ -253,7 +254,15 @@ fun LoginScreen(
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
+                    if (!isConnected) {
+                        Spacer(modifier = Modifier.height(12.dp))
 
+                        Text(
+                            text = "No internet connection. Reconnect to sign in.",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 13.sp
+                        )
+                    }
                     if (authenticationViewModel.errorMessage != null) {
 
                         Spacer(
@@ -293,7 +302,7 @@ fun LoginScreen(
 
                 TextButton(
                     enabled =
-                        !authenticationViewModel.isLoading,
+                     !authenticationViewModel.isLoading && isConnected,
                     onClick = {
 
                         if (isStaffLogin) {
