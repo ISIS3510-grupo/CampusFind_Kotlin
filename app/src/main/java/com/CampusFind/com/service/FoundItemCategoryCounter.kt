@@ -12,8 +12,11 @@ object FoundItemCategoryCounter {
         if (categories.isEmpty()) {
             return emptyList()
         }
-        return categories.groupBy { it }.map { (category, items) ->
-            CategoryFoundCount(category, items.size, items.size * 100.0 / categories.size)
+        val normalized = categories.map { category ->
+            category.trim().lowercase().ifEmpty { "uncategorized" }
+        }
+        return normalized.groupBy { it }.map { (category, items) ->
+            CategoryFoundCount(category, items.size, items.size * 100.0 / normalized.size)
         }.sortedWith(compareByDescending<CategoryFoundCount> { it.count }.thenBy { it.category })
     }
 }
