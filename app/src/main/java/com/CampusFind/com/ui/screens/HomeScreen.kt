@@ -28,6 +28,7 @@ import com.CampusFind.com.ui.components.CampusYellow
 fun HomeScreen(
     onProfile: () -> Unit,
     onReportFound: () -> Unit,
+    onSearchFound: () -> Unit,
     onLogout: () -> Unit
 ) {
 
@@ -56,7 +57,7 @@ fun HomeScreen(
 
                 NavigationBarItem(
                     selected = false,
-                    onClick = {},
+                    onClick = onSearchFound,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Search,
@@ -184,6 +185,7 @@ fun HomeScreen(
                             shape = RoundedCornerShape(10.dp)
                         )
                         .clickable {
+                            onSearchFound()
                         }
                         .padding(24.dp),
                     verticalAlignment = Alignment.Top
