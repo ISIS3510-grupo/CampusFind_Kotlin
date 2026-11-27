@@ -25,6 +25,7 @@ import com.CampusFind.com.ui.screens.AdminLostReportsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
+import com.CampusFind.com.ui.screens.AdminRegisterFoundScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
 import com.CampusFind.com.ui.screens.AdminFoundCategoriesScreen
 import com.CampusFind.com.ui.screens.BiometricVerificationScreen
@@ -58,6 +59,7 @@ object Routes {
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
     const val ADMIN_FOUND_CATEGORIES = "admin_found_categories"
+    const val ADMIN_REGISTER_FOUND = "admin_register_found"
     const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
@@ -310,9 +312,7 @@ fun AppNavigation(
                         .getCurrentUserEmail(),
 
                 onRegisterFound = {
-                    navController.navigate(
-                        Routes.REPORT_FOUND
-                    )
+                    navController.navigate(Routes.ADMIN_REGISTER_FOUND)
                 },
 
                 onSearchRecords = {
@@ -377,6 +377,40 @@ fun AppNavigation(
             )
         }
 
+        composable(Routes.ADMIN_REGISTER_FOUND) {
+            val optionsViewModel: ReportLostItemViewModel = viewModel()
+
+            LaunchedEffect(Unit) {
+                optionsViewModel.loadCategories()
+                optionsViewModel.loadLocations()
+            }
+
+            val goToDashboard = {
+                navController.navigate(Routes.ADMIN_HOME) {
+                    popUpTo(Routes.ADMIN_HOME)
+                    launchSingleTop = true
+                }
+            }
+
+            AdminRegisterFoundScreen(
+                categories = optionsViewModel.categories,
+                locations = optionsViewModel.locations,
+                onBack = { navController.popBackStack() },
+                onDashboard = goToDashboard,
+                onSearch = {
+                    navController.navigate(Routes.ADMIN_FOUND_INVENTORY) {
+                        popUpTo(Routes.ADMIN_HOME)
+                    }
+                },
+                onClaims = {
+                    navController.navigate(Routes.ADMIN_CLAIMS) {
+                        popUpTo(Routes.ADMIN_HOME)
+                    }
+                },
+                onRegistered = goToDashboard
+            )
+        }
+
         composable(Routes.ADMIN_FOUND_INVENTORY) {
             AdminFoundInventoryScreen(
                 isConnected = connectivityObserver.isConnected,
@@ -399,7 +433,7 @@ fun AppNavigation(
                 },
 
                 onRegister = {
-                    navController.navigate(Routes.REPORT_FOUND)
+                    navController.navigate(Routes.ADMIN_REGISTER_FOUND)
                 },
 
                 onClaims = {
