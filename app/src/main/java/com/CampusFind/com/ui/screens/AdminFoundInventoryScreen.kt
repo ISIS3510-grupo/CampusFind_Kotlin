@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import java.text.DateFormat
-
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.CampusYellow
@@ -26,6 +25,7 @@ import com.CampusFind.com.viewmodel.AdminFoundInventoryViewModel
 import com.CampusFind.com.viewmodel.AdminLostReportsViewModel
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 
 
 @Composable
@@ -35,6 +35,8 @@ fun AdminFoundInventoryScreen(
     onDashboard: () -> Unit,
     onRegister: () -> Unit,
     onClaims: () -> Unit,
+    onOpenFoundItem: (String) -> Unit,
+    onOpenClaimReview: (String) -> Unit,
     viewModel: AdminFoundInventoryViewModel = viewModel(),
     lostViewModel: AdminLostReportsViewModel = viewModel()
 ) {
@@ -199,18 +201,10 @@ fun AdminFoundInventoryScreen(
                         onClick = {
                             lostViewModel.loadReports()
                         },
-                        enabled = !lostViewModel.isLoading &&
-                                lostViewModel.busyReportId == null
+                        enabled = !lostViewModel.isLoading
                     ) {
                         Text("Reload reports")
                     }
-                }
-
-                lostViewModel.successMessage?.let { message ->
-                    Text(
-                        text = message,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
 
                 if (
@@ -238,8 +232,12 @@ fun AdminFoundInventoryScreen(
                     ) { report ->
 
                         Row(
+
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    onOpenClaimReview(report.id)
+                                }
                                 .border(
                                     1.dp,
                                     CampusBorder,
@@ -344,6 +342,9 @@ fun AdminFoundInventoryScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clickable {
+                                        onOpenFoundItem(item.id)
+                                    }
                                     .border(
                                         1.dp,
                                         CampusBorder,
