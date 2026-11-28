@@ -22,11 +22,14 @@ import com.CampusFind.com.ui.components.YellowBadge
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.CampusFind.com.viewmodel.ClaimsViewModel
 import java.util.Locale
+import androidx.compose.foundation.clickable
 
 @Composable
 fun AdminClaimsScreen(
     onBack: () -> Unit,
+    onOpenClaim: (String) -> Unit,
     viewModel: ClaimsViewModel = viewModel()
+
 ) {
     val claims = viewModel.claims
     val isLoading = viewModel.isLoading
@@ -35,7 +38,6 @@ fun AdminClaimsScreen(
     LaunchedEffect(Unit) {
         viewModel.load()
     }
-
 
     Column(
         modifier = Modifier
@@ -62,6 +64,9 @@ fun AdminClaimsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable {
+                            onOpenClaim(claim.reportId)
+                        }
                         .border(
                             width = 1.dp,
                             color = CampusBorder,

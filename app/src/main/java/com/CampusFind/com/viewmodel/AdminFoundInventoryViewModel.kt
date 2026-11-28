@@ -18,8 +18,6 @@ class AdminFoundInventoryViewModel : ViewModel() {
 
     private val repository = AdminFoundInventoryRepository()
 
-    private var allItems = emptyList<FoundItemDetail>()
-
     var items by mutableStateOf<List<FoundItemDetail>>(emptyList())
         private set
 
@@ -32,6 +30,7 @@ class AdminFoundInventoryViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    private var allItems = emptyList<FoundItemDetail>()
     private var searchJob: Job? = null
 
     fun loadItems() {

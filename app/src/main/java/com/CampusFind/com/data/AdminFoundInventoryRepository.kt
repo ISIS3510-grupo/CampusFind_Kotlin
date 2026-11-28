@@ -22,7 +22,9 @@ class AdminFoundInventoryRepository {
                         id = document.id,
                         title = document.getString("title") ?: "",
                         locationName = document.getString("locationName") ?: "",
-                        createdAt = document.getTimestamp("createdAt")
+                        createdAt = document.getTimestamp("createdAt"),
+                        status = document.getString("status") ?: "",
+                        category = document.getString("category") ?: ""
                     )
                 }.sortedByDescending {
                     it.createdAt?.toDate()?.time ?: 0L
