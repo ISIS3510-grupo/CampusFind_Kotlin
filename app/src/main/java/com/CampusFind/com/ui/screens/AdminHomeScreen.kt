@@ -49,6 +49,7 @@ fun AdminHomeScreen(
     onRegisterFound: () -> Unit,
     onSearchRecords: () -> Unit,
     onReportTimes: () -> Unit,
+    onFoundCategories: () -> Unit,
     onMatchSearchTime: () -> Unit,
     onDonationPotential: () -> Unit,
     onReviewClaims: () -> Unit,
@@ -187,6 +188,11 @@ fun AdminHomeScreen(
                 SecondaryButton(
                     text = "Average time to found",
                     onClick = onReportTimes
+                )
+
+                SecondaryButton(
+                    text = "Found items by category",
+                    onClick = onFoundCategories
                 )
 
                 SecondaryButton(
