@@ -8,45 +8,37 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.CampusFind.com.ui.components.*
 import com.CampusFind.com.viewmodel.AdminClaimReviewViewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 
 @Composable
 fun AdminClaimReviewScreen(
     reportId: String?,
     foundItemId: String?,
-    walkInInitially: Boolean,
     isConnected: Boolean,
+    onOpenWalkIn: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: AdminClaimReviewViewModel = viewModel()
 ) {
-    var walkIn by rememberSaveable(reportId, foundItemId) {
-        mutableStateOf(walkInInitially)
-    }
-
-    var reportText by rememberSaveable(reportId, foundItemId) {
-        mutableStateOf(reportId.orEmpty())
-    }
-
-    var email by rememberSaveable {
-        mutableStateOf("")
-    }
 
     var expanded by remember { mutableStateOf(false) }
 
     val claim = viewModel.selectedClaim
+
     val itemId = foundItemId ?: claim?.foundItemId
 
-    var ownership by remember(claim?.id, walkIn, reportText, email) {
+    var ownership by remember(claim?.id) {
         mutableStateOf(false)
     }
 
-    var identity by remember(claim?.id, walkIn, reportText, email) {
+    var identity by remember(claim?.id) {
         mutableStateOf(false)
     }
 
@@ -55,12 +47,10 @@ fun AdminClaimReviewScreen(
             !viewModel.busy
 
     LaunchedEffect(reportId, foundItemId, isConnected) {
-        if (!isConnected) {
-            viewModel.offline()
-        } else if (walkInInitially && reportId == null) {
-            viewModel.clear()
-        } else {
+        if (isConnected) {
             viewModel.loadClaims(reportId, foundItemId)
+        } else {
+            viewModel.offline()
         }
     }
 
@@ -68,6 +58,7 @@ fun AdminClaimReviewScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -96,13 +87,7 @@ fun AdminClaimReviewScreen(
         if (enabled && viewModel.error != null) {
             TextButton(
                 onClick = {
-                    if (walkIn && itemId != null &&
-                        reportText.isNotBlank()
-                    ) {
-                        viewModel.loadWalkIn(reportText.trim(), itemId)
-                    } else {
-                        viewModel.loadClaims(reportId, foundItemId)
-                    }
+                    viewModel.loadClaims(reportId, foundItemId)
                 }
             ) {
                 Text("Retry")
@@ -110,105 +95,22 @@ fun AdminClaimReviewScreen(
         }
 
         if (isConnected && !viewModel.loading) {
+
             if (viewModel.delivered) {
                 Text("Physical delivery has been recorded.")
 
                 AdminButton(
                     "Finalize and close report",
-                    enabled && itemId != null &&
-                            (if (walkIn) reportText.isNotBlank()
-                            else claim != null)
+                    enabled && itemId != null && claim != null
                 ) {
-                    val currentReport = if (walkIn) {
-                        reportText.trim()
-                    } else {
-                        claim?.reportId.orEmpty()
-                    }
-
-                    if (itemId != null) {
-                        viewModel.close(currentReport, itemId, onBack)
-                    }
-                }
-
-            } else if (walkIn) {
-                Text(
-                    "Register walk-in delivery",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                OutlinedTextField(
-                    value = reportText,
-                    onValueChange = {
-                        reportText = it
-                        viewModel.clearEvidence()
-                    },
-                    label = { Text("Lost report ID") },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = enabled
-                )
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Student's institutional email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = enabled
-                )
-
-                OutlinedButton(
-                    onClick = {
-                        itemId?.let {
-                            viewModel.loadWalkIn(reportText.trim(), it)
-                        }
-                    },
-                    enabled = enabled &&
-                            itemId != null &&
-                            reportText.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Load ownership details")
-                }
-
-                viewModel.evidence?.let { proof ->
-                    DetailBox {
-                        Text("Found: ${proof.itemTitle}")
-                        Text("Lost: ${proof.reportTitle}")
-                        DetailText(
-                            "Private item detail",
-                            proof.foundPrivateDetail
-                        )
-                        DetailText(
-                            "Report's private detail",
-                            proof.reportPrivateDetail
+                    if (itemId != null && claim != null) {
+                        viewModel.close(
+                            claim.reportId,
+                            itemId,
+                            onBack
                         )
                     }
-
-                    Verification(
-                        ownership, identity, enabled,
-                        { ownership = it },
-                        { identity = it }
-                    )
-
-                    AdminButton(
-                        "Verify ID & mark as delivered",
-                        enabled && ownership && identity &&
-                                email.trim().endsWith(
-                                    "@uniandes.edu.co",
-                                    ignoreCase = true
-                                )
-                    ) {
-                        itemId?.let {
-                            viewModel.walkIn(
-                                reportText.trim(),
-                                it,
-                                email.trim(),
-                                ownership,
-                                identity
-                            )
-                        }
-                    }
                 }
-
             } else {
                 if (viewModel.claims.isEmpty()) {
                     Text(
@@ -264,16 +166,6 @@ fun AdminClaimReviewScreen(
                         Text("Digital ownership answers submitted")
                     }
 
-                    Text(
-                        "Found item and lost report",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    DetailBox {
-                        Text("Found: ${selected.itemTitle}")
-                        Text("Lost: ${selected.reportTitle}")
-                        Text("Status: ${selected.status}")
-                    }
 
                     Text(
                         "Compare claim answers",
@@ -281,59 +173,73 @@ fun AdminClaimReviewScreen(
                     )
 
                     DetailBox {
+                        Text(
+                            "Found: ${selected.itemTitle} · Lost: ${selected.reportTitle}",
+                            color = CampusGray,
+                            fontSize = 12.sp
+                        )
+
                         DetailText(
                             "Student's answer",
                             selected.ownershipAnswer
                         )
+
                         DetailText(
                             "Private item detail",
                             selected.foundPrivateDetail
                         )
+
                         DetailText(
                             "Report's private detail",
                             selected.reportPrivateDetail
                         )
-                        Text("Staff must verify ownership independently.")
-                    }
 
-                    Verification(
-                        ownership, identity, enabled,
-                        { ownership = it },
-                        { identity = it }
-                    )
-
-                    if (selected.status == "pending") {
                         Row(
-                            horizontalArrangement =
-                                Arrangement.spacedBy(8.dp)
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.review(
-                                        false, ownership,
-                                        reportId, foundItemId
-                                    )
-                                },
-                                enabled = enabled,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Reject claim")
-                            }
+                            Checkbox(
+                                checked = ownership,
+                                onCheckedChange = { ownership = it },
+                                enabled = enabled
+                            )
 
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.review(
-                                        true, ownership,
-                                        reportId, foundItemId
-                                    )
-                                },
-                                enabled = enabled && ownership,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Approve ownership")
-                            }
+                            Text(
+                                "I verified the private ownership details.",
+                                modifier = Modifier.weight(1f),
+                                fontSize = 13.sp
+                            )
                         }
                     }
+
+                    Text(
+                        "Physical identity check",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    DetailBox {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = identity,
+                                onCheckedChange = { identity = it },
+                                enabled = enabled
+                            )
+
+                            Text(
+                                "I physically verified the Uniandes ID and institutional email.",
+                                modifier = Modifier.weight(1f),
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+
+                    Text(
+                        "Only after the physical check and handoff should the item be marked delivered.",
+                        color = CampusGray,
+                        fontSize = 12.sp
+                    )
+
 
                     AdminButton(
                         "Verify ID & mark as delivered",
@@ -347,25 +253,54 @@ fun AdminClaimReviewScreen(
                             reportId, foundItemId
                         )
                     }
-
                     if (selected.status == "pending") {
                         OutlinedButton(
                             onClick = {
-                                reportText = selected.reportId
-                                viewModel.clearEvidence()
-                                walkIn = true
+                                onOpenWalkIn(selected.foundItemId)
                             },
                             enabled = enabled,
+                            shape = RoundedCornerShape(9.dp),
+                            border = BorderStroke(1.dp, Color.Black),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Register walk-in delivery instead")
+                        }
+                            Row(
+                                horizontalArrangement =
+                                    Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = {
+                                        viewModel.review(
+                                            false, ownership,
+                                            reportId, foundItemId
+                                        )
+                                    },
+                                    enabled = enabled,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Reject claim")
+                                }
+
+                                OutlinedButton(
+                                    onClick = {
+                                        viewModel.review(
+                                            true, ownership,
+                                            reportId, foundItemId
+                                        )
+                                    },
+                                    enabled = enabled && ownership,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Approve ownership")
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
 
 @Composable
 private fun DetailBox(

@@ -39,7 +39,6 @@ fun AdminClaimsScreen(
         viewModel.load()
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()

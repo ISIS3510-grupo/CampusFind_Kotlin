@@ -14,5 +14,7 @@ data class LostReport(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val category: String = "",
-    val description: String = ""
+    val description: String = "",
+    val matchedFoundItemId: String = ""
+
 )

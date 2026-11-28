@@ -1,7 +1,6 @@
 package com.CampusFind.com.data
 
 import com.CampusFind.com.model.AdminClaimCase
-import com.CampusFind.com.model.WalkInEvidence
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -169,71 +168,6 @@ class AdminClaimReviewRepository {
             reportPrivateDetail = docs[5].getString("privateVerificationDetail")
         )
     }
-
-    fun loadWalkIn(
-        reportId: String,
-        itemId: String,
-        success: (WalkInEvidence) -> Unit,
-        error: (String) -> Unit
-    ) {
-        if (reportId.isBlank() || itemId.isBlank() ||
-            reportId.contains("/") || itemId.contains("/")
-        ) {
-            error("Valid report and item IDs are required.")
-            return
-        }
-
-        verifyAdmin({ uid ->
-            val tasks = listOf(
-                read("lostReports", reportId),
-                read("foundItems", itemId),
-                read("lostReportPrivate", reportId),
-                read("foundItemPrivate", itemId)
-            )
-
-            Tasks.whenAllSuccess<DocumentSnapshot>(tasks)
-                .addOnSuccessListener { docs ->
-                    if (auth.currentUser?.uid != uid) {
-                        error("Administrator session changed.")
-                        return@addOnSuccessListener
-                    }
-
-                    val report = docs[0]
-                    val item = docs[1]
-
-                    if (!report.exists() || !item.exists() ||
-                        report.getString("status") in listOf(
-                            "claimed", "closed"
-                        ) ||
-                        item.getString("status") != "available"
-                    ) {
-                        error("Report or item is not available.")
-                        return@addOnSuccessListener
-                    }
-
-                    success(
-                        WalkInEvidence(
-                            reportId = reportId,
-                            foundItemId = itemId,
-                            reportTitle = report.getString("title")
-                                ?: "Lost report",
-                            itemTitle = item.getString("title")
-                                ?: "Found item",
-                            reportPrivateDetail = docs[2].getString(
-                                "privateVerificationDetail"
-                            ),
-                            foundPrivateDetail = docs[3].getString(
-                                "privateCharacteristics"
-                            )
-                        )
-                    )
-                }
-                .addOnFailureListener {
-                    error(it.localizedMessage ?: "Unable to load evidence.")
-                }
-        }, error)
-    }
-
     private fun action(
         name: String,
         data: Map<String, Any>,
@@ -284,24 +218,6 @@ class AdminClaimReviewRepository {
             "claimId" to claim.id,
             "reportId" to claim.reportId,
             "foundItemId" to claim.foundItemId,
-            "ownershipVerified" to true,
-            "physicalIdVerified" to true
-        ),
-        success, error
-    )
-
-    fun deliverWalkIn(
-        reportId: String,
-        itemId: String,
-        email: String,
-        success: () -> Unit,
-        error: (String) -> Unit
-    ) = action(
-        "adminDeliverWalkIn",
-        mapOf(
-            "reportId" to reportId,
-            "foundItemId" to itemId,
-            "studentEmail" to email.trim(),
             "ownershipVerified" to true,
             "physicalIdVerified" to true
         ),

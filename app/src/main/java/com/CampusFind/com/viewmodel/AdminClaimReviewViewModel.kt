@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.CampusFind.com.data.AdminClaimReviewRepository
 import com.CampusFind.com.model.AdminClaimCase
-import com.CampusFind.com.model.WalkInEvidence
 
 class AdminClaimReviewViewModel : ViewModel() {
 
@@ -17,9 +16,6 @@ class AdminClaimReviewViewModel : ViewModel() {
         private set
 
     var selectedId by mutableStateOf<String?>(null)
-        private set
-
-    var evidence by mutableStateOf<WalkInEvidence?>(null)
         private set
 
     var loading by mutableStateOf(false)
@@ -41,7 +37,6 @@ class AdminClaimReviewViewModel : ViewModel() {
         ++version
         claims = emptyList()
         selectedId = null
-        evidence = null
         delivered = false
         loading = false
         busy = false
@@ -55,7 +50,6 @@ class AdminClaimReviewViewModel : ViewModel() {
         claims = emptyList()
         selectedId = null
         delivered = false
-        evidence = null
 
         repository.loadClaims(
             reportId, itemId,
@@ -81,34 +75,6 @@ class AdminClaimReviewViewModel : ViewModel() {
             selectedId = id
             delivered = selectedClaim?.status == "delivered"
         }
-    }
-
-    fun clearEvidence() {
-        ++version
-        evidence = null
-    }
-
-    fun loadWalkIn(reportId: String, itemId: String) {
-        val request = ++version
-        busy = true
-        evidence = null
-        error = null
-
-        repository.loadWalkIn(
-            reportId, itemId,
-            success = {
-                if (request == version) {
-                    evidence = it
-                    busy = false
-                }
-            },
-            error = {
-                if (request == version) {
-                    error = it
-                    busy = false
-                }
-            }
-        )
     }
 
     private fun execute(
@@ -172,31 +138,6 @@ class AdminClaimReviewViewModel : ViewModel() {
         execute(
             { ok, fail -> repository.deliver(claim, ok, fail) },
             { loadClaims(reportId, itemId) }
-        )
-    }
-
-    fun walkIn(
-        reportId: String,
-        itemId: String,
-        email: String,
-        verified: Boolean,
-        identityChecked: Boolean
-    ) {
-        if (evidence?.reportId != reportId ||
-            evidence?.foundItemId != itemId ||
-            !verified || !identityChecked ||
-            !email.trim().endsWith(
-                "@uniandes.edu.co", ignoreCase = true
-            )
-        ) return
-
-        execute(
-            { ok, fail ->
-                repository.deliverWalkIn(
-                    reportId, itemId, email, ok, fail
-                )
-            },
-            { delivered = true }
         )
     }
 

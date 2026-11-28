@@ -21,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.CampusFind.com.ui.components.*
 import com.CampusFind.com.viewmodel.AdminFoundItemDetailViewModel
 import java.text.DateFormat
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 
 @Composable
 fun AdminFoundItemDetailScreen(
@@ -43,21 +45,22 @@ fun AdminFoundItemDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
         ScreenTitle(
             title = "Found inventory item",
-            onBack = onBack
+            subtitle = viewModel.item?.let {
+                "${it.status.replaceFirstChar { char ->
+                    char.uppercase()
+                }} · ${it.title}"
+            } ?: "Item details",
+            onBack = onBack,
+            titleSize = 28.sp
         )
-
-        TextButton(
-            onClick = { viewModel.load(foundItemId) },
-            enabled = isConnected && !viewModel.isLoading
-        ) {
-            Text("Refresh item", color = Color.Black)
-        }
 
         if (viewModel.isLoading) {
             CircularProgressIndicator(color = Color.Black)
@@ -164,7 +167,8 @@ fun AdminFoundItemDetailScreen(
                     .height(52.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black
-                )
+                ),
+                shape = RoundedCornerShape(9.dp)
             ) {
                 Text(
                     "Open claim review",
@@ -178,7 +182,8 @@ fun AdminFoundItemDetailScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Black
-                )
+                ),
+                border = BorderStroke(1.5.dp, Color.Black)
             ) {
                 Text("Register walk-in delivery")
             }

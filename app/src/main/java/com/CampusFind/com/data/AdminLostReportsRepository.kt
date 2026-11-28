@@ -14,11 +14,18 @@ class AdminLostReportsRepository {
             .whereEqualTo("status", "pending")
             .get()
             .addOnSuccessListener { claims ->
+                val matchByReport = claims.documents.mapNotNull { claim ->
+                    val reportId = claim.getString("reportId")
+                    val foundItemId = claim.getString("foundItemId")
 
-                val reportIds = claims.documents
-                    .filter { !it.getString("foundItemId").isNullOrBlank() }
-                    .mapNotNull { it.getString("reportId") }
-                    .toSet()
+                    if (reportId.isNullOrBlank() || foundItemId.isNullOrBlank()) {
+                        null
+                    } else {
+                        reportId to foundItemId
+                    }
+                }.toMap()
+
+                val reportIds = matchByReport.keys
 
                 if (reportIds.isEmpty()) {
                     onSuccess(emptyList())
@@ -49,7 +56,9 @@ class AdminLostReportsRepository {
                                     reportedAt = document.getTimestamp("reportedAt"),
                                     description = document.getString("description") ?: "",
                                     latitude = (document.get("latitude") as? Number)?.toDouble(),
-                                    longitude = (document.get("longitude") as? Number)?.toDouble()
+                                    longitude = (document.get("longitude") as? Number)?.toDouble(),
+                                    matchedFoundItemId = matchByReport[document.id].orEmpty()
+
                                 )
                             }
                             .sortedByDescending { it.reportedAt }

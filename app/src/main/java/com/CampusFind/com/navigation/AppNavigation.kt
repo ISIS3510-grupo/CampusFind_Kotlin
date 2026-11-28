@@ -52,6 +52,7 @@ import com.CampusFind.com.ui.screens.AdminFoundInventoryScreen
 import com.CampusFind.com.ui.screens.SearchFoundItemsScreen
 import com.CampusFind.com.ui.screens.AdminFoundItemDetailScreen
 import com.CampusFind.com.ui.screens.AdminClaimReviewScreen
+import com.CampusFind.com.ui.screens.AdminWalkInScreen
 object Routes {
     const val ADMIN_FOUND_INVENTORY = "admin_found_inventory"
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -74,6 +75,7 @@ object Routes {
     const val ADMIN_FOUND_DETAIL = "admin_found_detail/{foundItemId}"
     const val ADMIN_CLAIM_REVIEW = "admin_claim_review/{mode}/{recordId}"
 
+    const val ADMIN_WALK_IN = "admin_walk_in/{foundItemId}"
 
     fun lostReportDetail(
         reportId: String
@@ -94,6 +96,10 @@ object Routes {
 
     fun adminClaimReview(mode: String, id: String): String {
         return "admin_claim_review/$mode/${android.net.Uri.encode(id)}"
+    }
+
+    fun adminWalkIn(id: String): String {
+        return "admin_walk_in/${android.net.Uri.encode(id)}"
     }
 }
 
@@ -482,8 +488,37 @@ fun AppNavigation(
                 },
                 onWalkIn = {
                     navController.navigate(
-                        Routes.adminClaimReview("walkin", itemId)
+                        Routes.adminWalkIn(itemId)
                     )
+                }
+            )
+        }
+
+        composable(
+            route = Routes.ADMIN_WALK_IN,
+            arguments = listOf(
+                navArgument("foundItemId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { entry ->
+
+            val itemId = entry.arguments
+                ?.getString("foundItemId").orEmpty()
+
+            AdminWalkInScreen(
+                foundItemId = itemId,
+                isConnected = connectivityObserver.isConnected,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onDone = {
+                    navController.navigate(Routes.ADMIN_HOME) {
+                        popUpTo(Routes.ADMIN_HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -513,14 +548,18 @@ fun AppNavigation(
                 foundItemId = id.takeIf {
                     mode != "report"
                 },
-                walkInInitially = mode == "walkin",
                 isConnected = connectivityObserver.isConnected,
                 onBack = {
                     navController.popBackStack()
+                },
+
+                onOpenWalkIn = { itemId ->
+                    navController.navigate(
+                        Routes.adminWalkIn(itemId)
+                    )
                 }
             )
         }
-
 
         composable(Routes.ADMIN_OWNERSHIP) {
             AdminOwnershipScreen(

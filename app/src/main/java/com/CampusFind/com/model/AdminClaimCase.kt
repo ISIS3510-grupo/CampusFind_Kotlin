@@ -14,12 +14,3 @@ data class AdminClaimCase(
     val foundPrivateDetail: String?,
     val reportPrivateDetail: String?
 )
-
-data class WalkInEvidence(
-    val reportId: String,
-    val foundItemId: String,
-    val reportTitle: String,
-    val itemTitle: String,
-    val foundPrivateDetail: String?,
-    val reportPrivateDetail: String?
-)
