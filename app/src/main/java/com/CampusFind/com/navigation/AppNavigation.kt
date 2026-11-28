@@ -26,7 +26,6 @@ import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
 import com.CampusFind.com.ui.screens.AdminReportTimesScreen
-import com.CampusFind.com.ui.screens.AdminFoundCategoriesScreen
 import com.CampusFind.com.ui.screens.BiometricVerificationScreen
 import com.CampusFind.com.ui.screens.DonationPotentialScreen
 import com.CampusFind.com.ui.screens.DropOffInstructionsScreen
@@ -58,7 +57,6 @@ object Routes {
     const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
     const val ADMIN_REPORT_TIMES = "admin_report_times"
-    const val ADMIN_FOUND_CATEGORIES = "admin_found_categories"
     const val ADMIN_HOME = "admin_home"
     const val LOGIN = "login"
     const val PROFILE = "profile"
@@ -366,12 +364,6 @@ fun AppNavigation(
                     )
                 },
 
-                onFoundCategories = {
-                    navController.navigate(
-                        Routes.ADMIN_FOUND_CATEGORIES
-                    )
-                },
-
                 onDonationPotential = {
                     navController.navigate(
                         Routes.DONATION_POTENTIAL
@@ -470,18 +462,6 @@ fun AppNavigation(
         ) {
 
             AdminReportTimesScreen(
-                onBack = {
-                    navController
-                        .popBackStack()
-                }
-            )
-        }
-
-        composable(
-            Routes.ADMIN_FOUND_CATEGORIES
-        ) {
-
-            AdminFoundCategoriesScreen(
                 onBack = {
                     navController
                         .popBackStack()
