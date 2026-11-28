@@ -25,6 +25,7 @@ class AdminFoundItemDetailRepository {
         }
 
         val user = auth.currentUser
+
         if (user == null || !user.isEmailVerified ||
             !user.email.orEmpty().endsWith(
                 "@uniandes.edu.co",
@@ -39,65 +40,111 @@ class AdminFoundItemDetailRepository {
             .document(user.uid)
             .get(Source.SERVER)
             .addOnSuccessListener { profile ->
+
                 if (profile.getString("role") != "admin" ||
                     auth.currentUser?.uid != user.uid
                 ) {
+                    AdminFoundItemDetailCache.clear()
                     onError("Administrator access is required.")
                     return@addOnSuccessListener
                 }
 
-                firestore.collection("foundItems")
-                    .document(itemId)
-                    .get(Source.SERVER)
-                    .addOnSuccessListener { document ->
-                        if (!document.exists()) {
-                            onError("Found item not found.")
-                            return@addOnSuccessListener
-                        }
+                val version = AdminFoundItemDetailCache.version()
+                val cached = AdminFoundItemDetailCache.get(itemId)
 
-                        val item = FoundItemDetail(
-                            id = document.id,
-                            title = document.getString("title") ?: "",
-                            locationName = document.getString("locationName") ?: "",
-                            createdAt = document.getTimestamp("createdAt"),
-                            status = document.getString("status") ?: "",
-                            category = document.getString("category") ?: ""
-                        )
+                if (cached != null) {
+                    loadPrivateDetail(
+                        cached.item,
+                        cached.photoPath,
+                        user.uid,
+                        version,
+                        onSuccess,
+                        onError
+                    )
+                } else {
+                    firestore.collection("foundItems")
+                        .document(itemId)
+                        .get(Source.SERVER)
+                        .addOnSuccessListener { document ->
 
-                        val photoPath = document.getString("photoPath")
+                            if (auth.currentUser?.uid != user.uid ||
+                                AdminFoundItemDetailCache.version() != version
+                            ) {
+                                onError("Item information changed. Please retry.")
+                            } else if (!document.exists()) {
+                                onError("Found item not found.")
+                            } else {
+                                val item = FoundItemDetail(
+                                    id = document.id,
+                                    title = document.getString("title") ?: "",
+                                    locationName = document.getString("locationName") ?: "",
+                                    createdAt = document.getTimestamp("createdAt"),
+                                    status = document.getString("status") ?: "",
+                                    category = document.getString("category") ?: ""
+                                )
 
-                        firestore.collection("foundItemPrivate")
-                            .document(itemId)
-                            .get(Source.SERVER)
-                            .addOnSuccessListener { privateDoc ->
-                                if (auth.currentUser?.uid == user.uid) {
-                                    onSuccess(
-                                        item,
-                                        privateDoc.getString(
-                                            "privateCharacteristics"
-                                        ),
-                                        photoPath
-                                    )
-                                }
-                            }
-                            .addOnFailureListener { e ->
-                                onError(
-                                    e.localizedMessage
-                                        ?: "Unable to load private ownership detail."
+                                val photoPath = document.getString("photoPath")
+
+                                AdminFoundItemDetailCache.put(
+                                    item,
+                                    photoPath,
+                                    version
+                                )
+
+                                loadPrivateDetail(
+                                    item,
+                                    photoPath,
+                                    user.uid,
+                                    version,
+                                    onSuccess,
+                                    onError
                                 )
                             }
-                    }
-                    .addOnFailureListener { e ->
-                        onError(
-                            e.localizedMessage
-                                ?: "Unable to load found item."
-                        )
-                    }
+                        }
+                        .addOnFailureListener { e ->
+                            onError(
+                                e.localizedMessage
+                                    ?: "Unable to load found item."
+                            )
+                        }
+                }
             }
             .addOnFailureListener { e ->
                 onError(
                     e.localizedMessage
                         ?: "Unable to verify administrator access."
+                )
+            }
+    }
+
+    private fun loadPrivateDetail(
+        item: FoundItemDetail,
+        photoPath: String?,
+        uid: String,
+        version: Long,
+        onSuccess: (FoundItemDetail, String?, String?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        firestore.collection("foundItemPrivate")
+            .document(item.id)
+            .get(Source.SERVER)
+            .addOnSuccessListener { privateDoc ->
+                if (auth.currentUser?.uid == uid &&
+                    AdminFoundItemDetailCache.version() == version
+                ) {
+                    onSuccess(
+                        item,
+                        privateDoc.getString("privateCharacteristics"),
+                        photoPath
+                    )
+                } else {
+                    onError("Item information changed. Please retry.")
+                }
+            }
+            .addOnFailureListener { e ->
+                onError(
+                    e.localizedMessage
+                        ?: "Unable to load private ownership detail."
                 )
             }
     }

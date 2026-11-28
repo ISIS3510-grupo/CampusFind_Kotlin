@@ -26,6 +26,7 @@ class AdminWalkInRepository {
                 val response = result.data as? Map<*, *>
 
                 if (response?.get("status") == "delivered") {
+                    AdminFoundItemDetailCache.invalidate(itemId)
                     onSuccess()
                 } else {
                     onError("Delivery was not confirmed.")
