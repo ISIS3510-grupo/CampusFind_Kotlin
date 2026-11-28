@@ -12,20 +12,17 @@ class AdminLostReportsViewModel : ViewModel() {
 
     var reports by mutableStateOf<List<LostReport>>(emptyList())
         private set
+
     var isLoading by mutableStateOf(false)
         private set
-    var busyReportId by mutableStateOf<String?>(null)
-        private set
+
     var errorMessage by mutableStateOf<String?>(null)
-        private set
-    var successMessage by mutableStateOf<String?>(null)
         private set
 
     fun loadReports() {
-        if (isLoading || busyReportId != null) return
+        if (isLoading) return
         isLoading = true
         errorMessage = null
-        successMessage = null
         repository.loadReports(
             onSuccess = {
                 reports = it
@@ -34,25 +31,6 @@ class AdminLostReportsViewModel : ViewModel() {
             onError = {
                 errorMessage = it
                 isLoading = false
-            }
-        )
-    }
-
-    fun markAsFound(report: LostReport) {
-        if (isLoading || busyReportId != null) return
-        busyReportId = report.id
-        errorMessage = null
-        successMessage = null
-        repository.markAsFound(
-            reportId = report.id,
-            onSuccess = {
-                reports = reports.filterNot { it.id == report.id }
-                busyReportId = null
-                successMessage = "Report marked as found."
-            },
-            onError = {
-                errorMessage = it
-                busyReportId = null
             }
         )
     }
