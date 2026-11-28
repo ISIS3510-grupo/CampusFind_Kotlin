@@ -180,6 +180,10 @@ class AdminClaimReviewRepository {
                     (response.data as? Map<*, *>)?.get("changed") == true
 
                 if (changed) {
+                    (data["foundItemId"] as? String)?.let {
+                        AdminFoundItemDetailCache.invalidate(it)
+                    }
+
                     success()
                 } else {
                     error("No changes made. Refresh the information.")
