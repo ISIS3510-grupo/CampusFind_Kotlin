@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import java.text.DateFormat
-
 import com.CampusFind.com.ui.components.CampusBorder
 import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.CampusYellow
@@ -26,6 +25,9 @@ import com.CampusFind.com.viewmodel.AdminFoundInventoryViewModel
 import com.CampusFind.com.viewmodel.AdminLostReportsViewModel
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.sp
+import com.CampusFind.com.ui.components.YellowBadge
 
 
 @Composable
@@ -35,6 +37,8 @@ fun AdminFoundInventoryScreen(
     onDashboard: () -> Unit,
     onRegister: () -> Unit,
     onClaims: () -> Unit,
+    onOpenFoundItem: (String) -> Unit,
+    onOpenClaimReview: (String) -> Unit,
     viewModel: AdminFoundInventoryViewModel = viewModel(),
     lostViewModel: AdminLostReportsViewModel = viewModel()
 ) {
@@ -80,7 +84,11 @@ fun AdminFoundInventoryScreen(
                     selected = true,
                     onClick = {},
                     icon = { Icon(Icons.Default.Search, null) },
-                    label = { Text("Search") }
+                    label = { Text("Search") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = Color.Black,
+                        indicatorColor = Color.Transparent                    )
                 )
                 NavigationBarItem(
                     selected = false,
@@ -145,14 +153,15 @@ fun AdminFoundInventoryScreen(
             Spacer(Modifier.height(16.dp))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = {
-                        selectedTab = "lost"
-                    },
-                    modifier = Modifier.weight(1f),
+                    onClick = { selectedTab = "lost" },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp),
+                    shape = RoundedCornerShape(9.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedTab == "lost")
                             CampusYellow else Color.White,
@@ -160,13 +169,15 @@ fun AdminFoundInventoryScreen(
                     ),
                     border = BorderStroke(1.dp, CampusBorder)
                 ) {
-                    Text("Matched Reports")
+                    Text("Matched Reports", fontSize = 14.sp)
                 }
+
                 Button(
-                    onClick = {
-                        selectedTab = "found"
-                    },
-                    modifier = Modifier.weight(1f),
+                    onClick = { selectedTab = "found" },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp),
+                    shape = RoundedCornerShape(9.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedTab == "found")
                             CampusYellow else Color.White,
@@ -174,7 +185,7 @@ fun AdminFoundInventoryScreen(
                     ),
                     border = BorderStroke(1.dp, CampusBorder)
                 ) {
-                    Text("Found Inventory")
+                    Text("Found Inventory", fontSize = 14.sp)
                 }
             }
 
@@ -199,18 +210,10 @@ fun AdminFoundInventoryScreen(
                         onClick = {
                             lostViewModel.loadReports()
                         },
-                        enabled = !lostViewModel.isLoading &&
-                                lostViewModel.busyReportId == null
+                        enabled = !lostViewModel.isLoading
                     ) {
                         Text("Reload reports")
                     }
-                }
-
-                lostViewModel.successMessage?.let { message ->
-                    Text(
-                        text = message,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
 
                 if (
@@ -240,6 +243,11 @@ fun AdminFoundInventoryScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    if (report.matchedFoundItemId.isNotBlank()) {
+                                        onOpenFoundItem(report.matchedFoundItemId)
+                                    }
+                                }
                                 .border(
                                     1.dp,
                                     CampusBorder,
@@ -269,38 +277,38 @@ fun AdminFoundInventoryScreen(
 
                             Column(
                                 modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-
                                 Text(
-                                    text = report.title.ifBlank {
-                                        "Untitled report"
-                                    },
+                                    text = report.title.ifBlank { "Untitled report" },
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.Black
+                                    color = Color.Black,
+                                    fontSize = 16.sp
                                 )
 
-                                Text(
-                                    text = "Category: ${report.category}",
-                                    color = CampusGray
-                                )
+                                val date = report.reportedAt?.toDate()?.let {
+                                    DateFormat.getDateInstance(
+                                        DateFormat.MEDIUM
+                                    ).format(it)
+                                } ?: "Date unavailable"
 
                                 Text(
-                                    text = report.locationName.ifBlank {
+                                    text = "${report.locationName.ifBlank {
                                         "Location unavailable"
-                                    },
-                                    color = CampusGray
+                                    }} · $date",
+                                    color = CampusGray,
+                                    fontSize = 12.sp
                                 )
 
-                                Text(
-                                    text = report.reportedAt?.toDate()?.let {
-                                        DateFormat.getDateInstance(
-                                            DateFormat.MEDIUM
-                                        ).format(it)
-                                    } ?: "Date unavailable",
-                                    color = CampusGray
-                                )
+                                Box(
+                                    modifier = Modifier.clickable {
+                                        onOpenClaimReview(report.id)
+                                    }
+                                ) {
+                                    YellowBadge(text = "Claim Available")
+                                }
                             }
+
                         }
                     }
                 }
@@ -344,6 +352,9 @@ fun AdminFoundInventoryScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clickable {
+                                        onOpenFoundItem(item.id)
+                                    }
                                     .border(
                                         1.dp,
                                         CampusBorder,

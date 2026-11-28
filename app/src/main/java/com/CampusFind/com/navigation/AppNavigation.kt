@@ -50,7 +50,9 @@ import androidx.compose.runtime.DisposableEffect
 import com.CampusFind.com.service.ConnectivityObserver
 import com.CampusFind.com.ui.screens.AdminFoundInventoryScreen
 import com.CampusFind.com.ui.screens.SearchFoundItemsScreen
-
+import com.CampusFind.com.ui.screens.AdminFoundItemDetailScreen
+import com.CampusFind.com.ui.screens.AdminClaimReviewScreen
+import com.CampusFind.com.ui.screens.AdminWalkInScreen
 object Routes {
     const val ADMIN_FOUND_INVENTORY = "admin_found_inventory"
     const val ADMIN_OWNERSHIP = "admin_ownership"
@@ -70,9 +72,10 @@ object Routes {
     const val DROP_OFF = "drop_off"
     const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
     const val SEARCH_FOUND_ITEMS = "search_found_items"
+    const val ADMIN_FOUND_DETAIL = "admin_found_detail/{foundItemId}"
+    const val ADMIN_CLAIM_REVIEW = "admin_claim_review/{mode}/{recordId}"
 
-
-
+    const val ADMIN_WALK_IN = "admin_walk_in/{foundItemId}"
 
     fun lostReportDetail(
         reportId: String
@@ -85,6 +88,18 @@ object Routes {
 
     fun matchAlert(matchId: String): String {
         return "match_alert/${android.net.Uri.encode(matchId)}"
+    }
+
+    fun adminFoundDetail(id: String): String {
+        return "admin_found_detail/${android.net.Uri.encode(id)}"
+    }
+
+    fun adminClaimReview(mode: String, id: String): String {
+        return "admin_claim_review/$mode/${android.net.Uri.encode(id)}"
+    }
+
+    fun adminWalkIn(id: String): String {
+        return "admin_walk_in/${android.net.Uri.encode(id)}"
     }
 }
 
@@ -433,6 +448,115 @@ fun AppNavigation(
 
                 onClaims = {
                     navController.navigate(Routes.ADMIN_CLAIMS)
+                },
+                onOpenFoundItem = { id ->
+                    navController.navigate(
+                        Routes.adminFoundDetail(id)
+                    )
+                },
+                onOpenClaimReview = { id ->
+                    navController.navigate(
+                        Routes.adminClaimReview("report", id)
+                    )
+                }
+            )
+        }
+
+
+        composable(
+            route = Routes.ADMIN_FOUND_DETAIL,
+            arguments = listOf(
+                navArgument("foundItemId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { entry ->
+
+            val itemId = entry.arguments
+                ?.getString("foundItemId").orEmpty()
+
+            AdminFoundItemDetailScreen(
+                foundItemId = itemId,
+                isConnected = connectivityObserver.isConnected,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onClaimReview = {
+                    navController.navigate(
+                        Routes.adminClaimReview("item", itemId)
+                    )
+                },
+                onWalkIn = {
+                    navController.navigate(
+                        Routes.adminWalkIn(itemId)
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = Routes.ADMIN_WALK_IN,
+            arguments = listOf(
+                navArgument("foundItemId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { entry ->
+
+            val itemId = entry.arguments
+                ?.getString("foundItemId").orEmpty()
+
+            AdminWalkInScreen(
+                foundItemId = itemId,
+                isConnected = connectivityObserver.isConnected,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onDone = {
+                    navController.navigate(Routes.ADMIN_HOME) {
+                        popUpTo(Routes.ADMIN_HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Routes.ADMIN_CLAIM_REVIEW,
+            arguments = listOf(
+                navArgument("mode") {
+                    type = NavType.StringType
+                },
+                navArgument("recordId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { entry ->
+
+            val mode = entry.arguments
+                ?.getString("mode").orEmpty()
+
+            val id = entry.arguments
+                ?.getString("recordId").orEmpty()
+
+            AdminClaimReviewScreen(
+                reportId = id.takeIf {
+                    mode == "report"
+                },
+                foundItemId = id.takeIf {
+                    mode != "report"
+                },
+                isConnected = connectivityObserver.isConnected,
+                onBack = {
+                    navController.popBackStack()
+                },
+
+                onOpenWalkIn = { itemId ->
+                    navController.navigate(
+                        Routes.adminWalkIn(itemId)
+                    )
                 }
             )
         }
@@ -449,6 +573,11 @@ fun AppNavigation(
             AdminClaimsScreen(
                 onBack = {
                     navController.popBackStack()
+                },
+                onOpenClaim = { reportId ->
+                    navController.navigate(
+                        Routes.adminClaimReview("report", reportId)
+                    )
                 }
             )
         }
