@@ -21,7 +21,6 @@ import androidx.navigation.navArgument
 import com.CampusFind.com.service.MatchNotificationService
 import com.CampusFind.com.ui.components.rememberLocationPermissionLauncher
 import com.CampusFind.com.ui.screens.AdminClaimsScreen
-import com.CampusFind.com.ui.screens.AdminLostReportsScreen
 import com.CampusFind.com.ui.screens.AdminHomeScreen
 import com.CampusFind.com.ui.screens.AdminMatchSearchTimeScreen
 import com.CampusFind.com.ui.screens.AdminOwnershipScreen
@@ -53,7 +52,6 @@ import com.CampusFind.com.ui.screens.AdminFoundInventoryScreen
 import com.CampusFind.com.ui.screens.SearchFoundItemsScreen
 
 object Routes {
-    const val ADMIN_LOST_REPORTS = "admin_lost_reports"
     const val ADMIN_FOUND_INVENTORY = "admin_found_inventory"
     const val ADMIN_OWNERSHIP = "admin_ownership"
     const val ADMIN_CLAIMS = "admin_claims"
@@ -412,22 +410,12 @@ fun AppNavigation(
 
         }
 
-        composable(Routes.ADMIN_LOST_REPORTS) {
-            AdminLostReportsScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
         composable(Routes.ADMIN_FOUND_INVENTORY) {
             AdminFoundInventoryScreen(
                 isConnected = connectivityObserver.isConnected,
 
                 onBack = {
                     navController.popBackStack()
-                },
-
-                onLostReports = {
-                    navController.navigate(Routes.ADMIN_LOST_REPORTS)
                 },
 
                 onDashboard = {

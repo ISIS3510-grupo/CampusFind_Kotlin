@@ -38,23 +38,36 @@ class AdminLostReportsViewModel : ViewModel() {
         )
     }
 
-    fun markAsFound(report: LostReport) {
+    fun markAsFound(
+        report: LostReport,
+        foundLocation: String,
+        privateCharacteristics: String,
+        existingFoundItemId: String?,
+        onSuccess: () -> Unit
+    ) {
         if (isLoading || busyReportId != null) return
+
         busyReportId = report.id
         errorMessage = null
         successMessage = null
+
         repository.markAsFound(
             reportId = report.id,
+            foundLocation = foundLocation,
+            privateCharacteristics = privateCharacteristics,
+            existingFoundItemId = existingFoundItemId,
             onSuccess = {
                 reports = reports.filterNot { it.id == report.id }
                 busyReportId = null
-                successMessage = "Report marked as found."
+                successMessage = "Item registered in found inventory."
+                onSuccess()
             },
-            onError = {
-                errorMessage = it
+            onError = { error ->
+                errorMessage = error
                 busyReportId = null
             }
         )
     }
+
 
 }

@@ -23,27 +23,48 @@ import com.CampusFind.com.ui.components.CampusGray
 import com.CampusFind.com.ui.components.CampusYellow
 import com.CampusFind.com.ui.components.ScreenTitle
 import com.CampusFind.com.viewmodel.AdminFoundInventoryViewModel
+import com.CampusFind.com.viewmodel.AdminLostReportsViewModel
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.BorderStroke
 
 
 @Composable
 fun AdminFoundInventoryScreen(
     isConnected: Boolean,
     onBack: () -> Unit,
-    onLostReports: () -> Unit,
     onDashboard: () -> Unit,
     onRegister: () -> Unit,
     onClaims: () -> Unit,
-    viewModel: AdminFoundInventoryViewModel = viewModel()
+    viewModel: AdminFoundInventoryViewModel = viewModel(),
+    lostViewModel: AdminLostReportsViewModel = viewModel()
 ) {
+
+    var selectedTab by rememberSaveable {
+        mutableStateOf("lost")
+    }
+
+
     LaunchedEffect(isConnected) {
         if (isConnected) {
             viewModel.loadItems()
+            lostViewModel.loadReports()
         }
     }
 
     val items = viewModel.items
+
     val isLoading = viewModel.isLoading
+
     val errorMessage = viewModel.errorMessage
+
+    val searchQuery = viewModel.searchQuery.trim()
+
+    val filteredLostReports = lostViewModel.reports.filter { report ->
+        searchQuery.isBlank() ||
+                report.title.contains(searchQuery, ignoreCase = true) ||
+                report.category.contains(searchQuery, ignoreCase = true) ||
+                report.locationName.contains(searchQuery, ignoreCase = true)
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -127,20 +148,31 @@ fun AdminFoundInventoryScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedButton(
-                    onClick = onLostReports,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Lost Reports")
-                }
-
                 Button(
-                    onClick = {},
+                    onClick = {
+                        selectedTab = "lost"
+                    },
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CampusYellow,
+                        containerColor = if (selectedTab == "lost")
+                            CampusYellow else Color.White,
                         contentColor = Color.Black
                     ),
-                    modifier = Modifier.weight(1f)
+                    border = BorderStroke(1.dp, CampusBorder)
+                ) {
+                    Text("Matched Reports")
+                }
+                Button(
+                    onClick = {
+                        selectedTab = "found"
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedTab == "found")
+                            CampusYellow else Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(1.dp, CampusBorder)
                 ) {
                     Text("Found Inventory")
                 }
@@ -148,32 +180,50 @@ fun AdminFoundInventoryScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            if (isLoading) {
-                Text(
-                    text = "Updating inventory...",
-                    color = CampusGray
-                )
-            }
+            if (selectedTab == "lost") {
 
-            if (errorMessage != null) {
-                Text(
-                    text = "Could not update inventory: $errorMessage",
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
+                if (lostViewModel.isLoading) {
+                    Text(
+                        text = "Loading matched reports...",
+                        color = CampusGray
+                    )
+                }
 
-            if (items.isEmpty() && !isLoading && errorMessage == null) {
-                Text(
-                    text = if (isConnected) {
-                        "No found items to display"
-                    } else {
-                        "No items loaded yet. Connect to the internet to load the inventory."
-                    },
-                    color = CampusGray
-                )
-            }
+                lostViewModel.errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error
+                    )
 
-            if (items.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = {
+                            lostViewModel.loadReports()
+                        },
+                        enabled = !lostViewModel.isLoading &&
+                                lostViewModel.busyReportId == null
+                    ) {
+                        Text("Reload reports")
+                    }
+                }
+
+                lostViewModel.successMessage?.let { message ->
+                    Text(
+                        text = message,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                if (
+                    !lostViewModel.isLoading &&
+                    lostViewModel.errorMessage == null &&
+                    filteredLostReports.isEmpty()
+                ) {
+                    Text(
+                        text = "No matched reports",
+                        color = CampusGray
+                    )
+                }
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -181,7 +231,12 @@ fun AdminFoundInventoryScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                     contentPadding = PaddingValues(bottom = 20.dp)
                 ) {
-                    items(items, key = { it.id }) { item ->
+
+                    items(
+                        filteredLostReports,
+                        key = { it.id }
+                    ) { report ->
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -194,6 +249,7 @@ fun AdminFoundInventoryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+
                             Box(
                                 modifier = Modifier
                                     .size(78.dp)
@@ -215,23 +271,29 @@ fun AdminFoundInventoryScreen(
                                 modifier = Modifier.weight(1f),
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
+
                                 Text(
-                                    text = item.title.ifBlank {
-                                        "Untitled item"
+                                    text = report.title.ifBlank {
+                                        "Untitled report"
                                     },
                                     fontWeight = FontWeight.Medium,
                                     color = Color.Black
                                 )
 
                                 Text(
-                                    text = item.locationName.ifBlank {
+                                    text = "Category: ${report.category}",
+                                    color = CampusGray
+                                )
+
+                                Text(
+                                    text = report.locationName.ifBlank {
                                         "Location unavailable"
                                     },
                                     color = CampusGray
                                 )
 
                                 Text(
-                                    text = item.createdAt?.toDate()?.let {
+                                    text = report.reportedAt?.toDate()?.let {
                                         DateFormat.getDateInstance(
                                             DateFormat.MEDIUM
                                         ).format(it)
@@ -243,7 +305,105 @@ fun AdminFoundInventoryScreen(
                     }
                 }
 
+            } else {
+
+                if (isLoading) {
+                    Text(
+                        text = "Updating inventory...",
+                        color = CampusGray
+                    )
+                }
+
+                if (errorMessage != null) {
+                    Text(
+                        text = "Could not update inventory: $errorMessage",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+
+                if (items.isEmpty() && !isLoading && errorMessage == null) {
+                    Text(
+                        text = if (isConnected) {
+                            "No found items to display"
+                        } else {
+                            "No items loaded yet. Connect to the internet to load the inventory."
+                        },
+                        color = CampusGray
+                    )
+                }
+
+                if (items.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        contentPadding = PaddingValues(bottom = 20.dp)
+                    ) {
+                        items(items, key = { it.id }) { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(
+                                        1.dp,
+                                        CampusBorder,
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(78.dp)
+                                        .background(
+                                            CampusBorder,
+                                            RoundedCornerShape(10.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Image,
+                                        contentDescription = null,
+                                        tint = CampusGray,
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = item.title.ifBlank {
+                                            "Untitled item"
+                                        },
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.Black
+                                    )
+
+                                    Text(
+                                        text = item.locationName.ifBlank {
+                                            "Location unavailable"
+                                        },
+                                        color = CampusGray
+                                    )
+
+                                    Text(
+                                        text = item.createdAt?.toDate()?.let {
+                                            DateFormat.getDateInstance(
+                                                DateFormat.MEDIUM
+                                            ).format(it)
+                                        } ?: "Date unavailable",
+                                        color = CampusGray
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
         }
+        }
     }
-}
