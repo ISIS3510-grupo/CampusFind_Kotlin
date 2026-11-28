@@ -6,5 +6,7 @@ data class FoundItemDetail(
     val id: String = "",
     val title: String = "",
     val locationName: String = "",
-    val createdAt: Timestamp? = null
+    val createdAt: Timestamp? = null,
+    val status: String = "",
+    val category: String = ""
 )

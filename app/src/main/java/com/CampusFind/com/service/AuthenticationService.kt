@@ -3,7 +3,10 @@ package com.CampusFind.com.service
 import com.CampusFind.com.model.UserRole
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Source
 class AuthenticationService {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -59,9 +62,19 @@ class AuthenticationService {
                 if (!task.isSuccessful) {
                     validatedRole = null
 
+                    val exception = task.exception
+
+                    val isNetworkError =
+                        exception is FirebaseNetworkException ||
+                                (exception as? FirebaseAuthException)?.errorCode ==
+                                "ERROR_NETWORK_REQUEST_FAILED"
+
                     onError(
-                        task.exception?.localizedMessage
-                            ?: "Unable to sign in."
+                        if (isNetworkError) {
+                            "Connection interrupted. Check your internet and try again."
+                        } else {
+                            exception?.localizedMessage ?: "Unable to sign in."
+                        }
                     )
 
                     return@addOnCompleteListener
@@ -100,7 +113,7 @@ class AuthenticationService {
                 firestore
                     .collection("users")
                     .document(user.uid)
-                    .get()
+                    .get(Source.SERVER)
                     .addOnSuccessListener { document ->
 
                         if (!document.exists()) {
@@ -133,16 +146,33 @@ class AuthenticationService {
 
                         onSuccess()
                     }
+
                     .addOnFailureListener { exception ->
 
                         validatedRole = null
-                        firebaseAuth.signOut()
 
-                        onError(
-                            exception.localizedMessage
-                                ?: "Unable to verify ${expectedRole.firestoreValue} role."
-                        )
+                        val isNetworkError =
+                            exception is FirebaseFirestoreException &&
+                                    (
+                                            exception.code == FirebaseFirestoreException.Code.UNAVAILABLE ||
+                                                    exception.code == FirebaseFirestoreException.Code.DEADLINE_EXCEEDED
+                                            )
+
+                        if (isNetworkError) {
+                            onError(
+                                "Connection interrupted while verifying your account. " +
+                                        "Reconnect and try again."
+                            )
+                        } else {
+                            firebaseAuth.signOut()
+
+                            onError(
+                                exception.localizedMessage
+                                    ?: "Unable to verify your account role."
+                            )
+                        }
                     }
+
             }
     }
 
