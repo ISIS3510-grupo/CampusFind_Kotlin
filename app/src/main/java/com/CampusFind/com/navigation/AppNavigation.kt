@@ -49,6 +49,7 @@ import com.CampusFind.com.viewmodel.PossibleMatchesViewModel
 import androidx.compose.runtime.DisposableEffect
 import com.CampusFind.com.service.ConnectivityObserver
 import com.CampusFind.com.ui.screens.AdminFoundInventoryScreen
+import com.CampusFind.com.ui.screens.SearchFoundItemsScreen
 
 object Routes {
     const val ADMIN_LOST_REPORTS = "admin_lost_reports"
@@ -68,6 +69,9 @@ object Routes {
     const val BIOMETRIC_VERIFY = "biometric_verify/{matchId}"
     const val DROP_OFF = "drop_off"
     const val ADMIN_MATCH_SEARCH_TIME = "admin_match_search_time"
+    const val SEARCH_FOUND_ITEMS = "search_found_items"
+
+
 
 
     fun lostReportDetail(
@@ -236,6 +240,7 @@ fun AppNavigation(
                         }
                     }
                 },
+                isConnected = connectivityObserver.isConnected,
 
                 onStaffLogin = {
 
@@ -274,6 +279,12 @@ fun AppNavigation(
                     )
                 },
 
+                onSearchFound = {
+                    navController.navigate(Routes.SEARCH_FOUND_ITEMS) {
+                        launchSingleTop = true
+                    }
+                },
+
                 onLogout = {
 
                     authenticationViewModel
@@ -293,6 +304,36 @@ fun AppNavigation(
             )
         }
 
+
+        composable(Routes.SEARCH_FOUND_ITEMS) {
+
+            SearchFoundItemsScreen(
+                isConnected = connectivityObserver.isConnected,
+
+                onBack = {
+                    navController.popBackStack()
+                },
+
+                onHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
+                },
+
+                onAlerts = {
+                    // Pending: connect the Alerts screen.
+                },
+
+                onProfile = {
+                    navController.navigate(Routes.PROFILE)
+                }
+
+
+            )
+        }
 
         composable(
             Routes.ADMIN_HOME
